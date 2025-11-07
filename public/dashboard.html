@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/styles/login.css">
+</head>
+<body>
+  <div class="login-container">
+    <h1>Dashboard</h1>
+    <p id="msg">Verificando autenticação...</p>
+    <button id="logout" class="btn" style="margin-top:1rem">Sair</button>
+  </div>
+  <script>
+    const token = localStorage.getItem('token');
+    const msg = document.getElementById('msg');
+    if (!token) {
+      window.location.href = '/login.html';
+    } else {
+      fetch('/protected', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(b => { msg.textContent = b.message || 'Autenticado'; })
+        .catch(() => { localStorage.removeItem('token'); window.location.href = '/login.html'; });
+    }
+    document.getElementById('logout').addEventListener('click', () => { localStorage.removeItem('token'); window.location.href = '/login.html'; });
+  </script>
+</body>
+</html>
