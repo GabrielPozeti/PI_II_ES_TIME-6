@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Componentes de Nota</title>
+    <link rel="stylesheet" href="styles/gestao.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Componentes de Nota</h1>
+
+      <div>
+        <label>Disciplina ID: <input id="disciplinaId" type="number" /></label>
+        <button id="loadBtn">Carregar</button>
+      </div>
+
+      <section id="componentesSection">
+        <h2>Componentes</h2>
+        <form id="componenteForm">
+          <input type="hidden" id="compId" />
+          <label>Nome: <input id="nome" required /></label>
+          <label>Sigla: <input id="sigla" /></label>
+          <label>Descrição: <input id="descricao" /></label>
+          <button type="submit">Salvar</button>
+          <button type="button" id="limparBtn">Limpar</button>
+        </form>
+
+        <ul id="componentesList"></ul>
+      </section>
+
+      <section id="matrizSection">
+        <h2>Matriz Alunos × Componentes</h2>
+        <div id="matrizContainer">Carregue uma disciplina para ver a matriz.</div>
+      </section>
+    </div>
+
+    <script src="scripts/componentes.js"></script>
+  </body>
+</html>

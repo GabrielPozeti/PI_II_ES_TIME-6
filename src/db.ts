@@ -48,6 +48,28 @@ export async function getDb() {
       atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(disciplina_id) REFERENCES disciplinas(id) ON DELETE RESTRICT
     );
+    CREATE TABLE IF NOT EXISTS componentes_nota (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      sigla TEXT,
+      descricao TEXT,
+      disciplina_id INTEGER NOT NULL,
+      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(disciplina_id) REFERENCES disciplinas(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS notas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      aluno_id INTEGER NOT NULL,
+      componente_id INTEGER NOT NULL,
+      valor REAL NOT NULL CHECK (valor >= 0.0 AND valor <= 10.0),
+      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(aluno_id) REFERENCES alunos(id) ON DELETE CASCADE,
+      FOREIGN KEY(componente_id) REFERENCES componentes_nota(id) ON DELETE CASCADE,
+      UNIQUE(aluno_id, componente_id)
+    );
   `);
   return _db;
 }
