@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Registrar - NotaDez</title>
+  <link rel="stylesheet" href="/styles/login.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+</head>
+<body>
+  <div class="login-container">
+    <h1>Registrar</h1>
+    <form id="form">
+      <div class="input-group">
+        <label for="nome">Nome</label>
+        <input id="nome" name="nome" type="text" required />
+      </div>
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required />
+      </div>
+      <div class="input-group">
+        <label for="telefone">Celular</label>
+        <input id="telefone" name="telefone" type="tel" />
+      </div>
+      <div class="input-group">
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password" required minlength="6" />
+      </div>
+      <div id="error" style="color:#9b1c40;margin-bottom:8px;display:none"></div>
+      <button class="btn" type="submit">Cadastrar</button>
+    </form>
+    <div class="register-link">Já tem conta? <a href="/login.html">Entrar</a></div>
+  </div>
+  <script>
+    const form = document.getElementById('form');
+    const errorEl = document.getElementById('error');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      const nome = document.getElementById('nome').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const telefone = document.getElementById('telefone').value.trim();
+      const senha = document.getElementById('senha').value;
+      try {
+        const res = await fetch('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, email, telefone, senha })
+        });
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.message || 'Erro');
+        // Redirect to login
+        window.location.href = '/login.html';
+      } catch (err) {
+        errorEl.textContent = err.message || 'Erro no cadastro';
+        errorEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+-- Script SQL para criar a tabela docentes
+CREATE TABLE IF NOT EXISTS docentes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nome TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  telefone TEXT,
+  senha_hash TEXT NOT NULL,
+  criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+  atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+);

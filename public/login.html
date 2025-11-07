@@ -12,15 +12,44 @@
     <form id="form">
       <div class="input-group">
         <label for="email">Email</label>
-        <input id="email" type="email" required />
+        <input id="email" name="email" type="email" required />
       </div>
       <div class="input-group">
         <label for="senha">Senha</label>
-        <input id="senha" type="password" required />
+        <input id="senha" name="senha" type="password" required minlength="6" />
       </div>
+      <div id="error" style="color:#9b1c40;margin-bottom:8px;display:none"></div>
       <button class="btn" type="submit">Entrar</button>
     </form>
+    <div style="margin-top:0.8rem">
+      <a href="forgot-password.html" style="color:#5a0028">Esqueci minha senha</a>
+    </div>
     <div class="register-link">Não tem conta? <a href="register.html">Registrar</a></div>
   </div>
+  <script>
+    const form = document.getElementById('form');
+    const errorEl = document.getElementById('error');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('senha').value;
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, senha })
+        });
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.message || 'Erro');
+        localStorage.setItem('token', body.token);
+        // Redirect to dashboard
+        window.location.href = '/dashboard.html';
+      } catch (err) {
+        errorEl.textContent = err.message || 'Erro no login';
+        errorEl.style.display = 'block';
+      }
+    });
+  </script>
 </body>
 </html>
