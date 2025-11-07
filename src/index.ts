@@ -4,6 +4,9 @@ import path from 'path';
 import cors from 'cors';
 import authRoutes from './routes/auth';
 import { verifyToken } from './middleware/auth';
+import instituicoesRoutes from './routes/instituicoes';
+import disciplinasRoutes from './routes/disciplinas';
+import turmasRoutes from './routes/turmas';
 
 dotenv.config();
 
@@ -14,6 +17,9 @@ app.use(express.json());
 app.use('/', express.static(path.join(__dirname, '..', 'public')));
 
 app.use('/auth', authRoutes);
+app.use('/instituicoes', instituicoesRoutes);
+app.use('/disciplinas', disciplinasRoutes);
+app.use('/turmas', turmasRoutes);
 
 app.get('/protected', verifyToken, (req, res) => {
   res.json({ message: 'Acesso autorizado ao recurso protegido' });

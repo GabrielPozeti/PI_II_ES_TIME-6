@@ -1,15 +1,19 @@
+import fs from 'fs';
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
 import path from 'path';
 
-const dbFile = path.resolve(__dirname, '..', 'data', 'docentes.sqlite');
+const dataDir = path.resolve(__dirname, '..', 'data');
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+const dbFile = path.resolve(dataDir, 'docentes.sqlite');
 
 let _db: Database<sqlite3.Database, sqlite3.Statement> | null = null;
 
-async function getDb() {
+export async function getDb() {
   if (_db) return _db;
   _db = await open({ filename: dbFile, driver: sqlite3.Database });
   await _db.exec(`
+    PRAGMA foreign_keys = ON;
     CREATE TABLE IF NOT EXISTS docentes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL,
@@ -18,6 +22,31 @@ async function getDb() {
       senha_hash TEXT NOT NULL,
       criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
       atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS instituicoes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      sigla TEXT,
+      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS disciplinas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      codigo TEXT,
+      instituicao_id INTEGER NOT NULL,
+      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(instituicao_id) REFERENCES instituicoes(id) ON DELETE RESTRICT
+    );
+    CREATE TABLE IF NOT EXISTS turmas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      disciplina_id INTEGER NOT NULL,
+      codigo TEXT,
+      periodo TEXT,
+      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(disciplina_id) REFERENCES disciplinas(id) ON DELETE RESTRICT
     );
   `);
   return _db;

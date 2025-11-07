@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gestão - NotaDez</title>
+    <link rel="stylesheet" href="styles/gestao.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Gestão de Instituições, Disciplinas e Turmas</h1>
+      <div class="columns">
+        <section class="col" id="col-instituicoes">
+          <h2>Instituições</h2>
+          <form id="form-instituicao">
+            <input type="hidden" id="instituicao-id">
+            <input id="instituicao-nome" placeholder="Nome" required>
+            <input id="instituicao-sigla" placeholder="Sigla">
+            <button type="submit">Salvar</button>
+            <button type="button" id="instituicao-cancel">Cancelar</button>
+          </form>
+          <ul id="lista-instituicoes"></ul>
+        </section>
+        <section class="col" id="col-disciplinas">
+          <h2>Disciplinas</h2>
+          <form id="form-disciplina">
+            <input type="hidden" id="disciplina-id">
+            <select id="disciplina-instituicao"></select>
+            <input id="disciplina-nome" placeholder="Nome" required>
+            <input id="disciplina-codigo" placeholder="Código">
+            <button type="submit">Salvar</button>
+            <button type="button" id="disciplina-cancel">Cancelar</button>
+          </form>
+          <ul id="lista-disciplinas"></ul>
+        </section>
+        <section class="col" id="col-turmas">
+          <h2>Turmas</h2>
+          <form id="form-turma">
+            <input type="hidden" id="turma-id">
+            <select id="turma-disciplina"></select>
+            <input id="turma-codigo" placeholder="Código">
+            <input id="turma-periodo" placeholder="Período">
+            <button type="submit">Salvar</button>
+            <button type="button" id="turma-cancel">Cancelar</button>
+          </form>
+          <ul id="lista-turmas"></ul>
+        </section>
+      </div>
+    </div>
+    <div id="modal" class="modal-hidden">
+      <div class="modal-content">
+        <p id="modal-text"></p>
+        <div class="modal-actions">
+          <button id="modal-confirm">Confirmar</button>
+          <button id="modal-cancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+    <script src="scripts/gestao.js"></script>
+  </body>
+</html>
