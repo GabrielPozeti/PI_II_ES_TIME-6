@@ -12,6 +12,7 @@ const auth_2 = require("./middleware/auth");
 const instituicoes_1 = __importDefault(require("./routes/instituicoes"));
 const disciplinas_1 = __importDefault(require("./routes/disciplinas"));
 const turmas_1 = __importDefault(require("./routes/turmas"));
+const componentes_1 = __importDefault(require("./routes/componentes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
@@ -21,6 +22,7 @@ app.use('/auth', auth_1.default);
 app.use('/instituicoes', instituicoes_1.default);
 app.use('/disciplinas', disciplinas_1.default);
 app.use('/turmas', turmas_1.default);
+app.use('/componentes', componentes_1.default);
 app.get('/protected', auth_2.verifyToken, (req, res) => {
     res.json({ message: 'Acesso autorizado ao recurso protegido' });
 });
