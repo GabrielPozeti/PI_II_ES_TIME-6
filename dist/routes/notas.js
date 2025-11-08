@@ -6,14 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db");
 const router = express_1.default.Router();
-
 router.get('/componente/:id', async (req, res) => {
     const componenteId = Number(req.params.id);
     const db = await (0, db_1.getDb)();
     const comp = await db.get('SELECT * FROM componentes_nota WHERE id = ?', componenteId);
     if (!comp)
         return res.status(404).json({ message: 'Componente não encontrado' });
-
     const alunos = await db.all(`
     SELECT a.id, a.matricula, a.nome
     FROM alunos a
@@ -50,7 +48,6 @@ router.put('/', async (req, res) => {
                 await db.run('ROLLBACK');
                 return res.status(400).json({ message: `Valor inválido para aluno ${aluno_id}: ${raw}` });
             }
-
             const aluno = await db.get('SELECT a.id, t.disciplina_id FROM alunos a JOIN turmas t ON a.id_turma = t.id WHERE a.id = ?', aluno_id);
             if (!aluno) {
                 await db.run('ROLLBACK');
