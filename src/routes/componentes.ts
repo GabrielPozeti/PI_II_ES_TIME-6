@@ -1,5 +1,6 @@
 import express from 'express';
 import { getDb } from '../db';
+import { computeNotaFinalForAluno } from '../utils/grades';
 
 const router = express.Router();
 
@@ -65,7 +66,7 @@ router.get('/matriz/:disciplinaId', async (req, res) => {
   const db = await getDb();
   const componentes = await db.all('SELECT * FROM componentes_nota WHERE disciplina_id = ? ORDER BY id', disciplinaId);
   const alunos = await db.all(`
-    SELECT a.id, a.matricula, a.nome, a.id_turma
+    SELECT a.id, a.matricula, a.nome, a.id_turma, a.nota_final
     FROM alunos a
     JOIN turmas t ON a.id_turma = t.id
     WHERE t.disciplina_id = ?
@@ -97,6 +98,11 @@ router.post('/notas', async (req, res) => {
      ON CONFLICT(aluno_id, componente_id) DO UPDATE SET valor = excluded.valor, atualizado_em = excluded.atualizado_em`,
     aluno_id, componente_id, v, now, now
   );
+  try {
+    await computeNotaFinalForAluno(db, aluno_id, aluno.disciplina_id);
+  } catch (err) {
+    console.error('Erro ao calcular nota_final:', err);
+  }
   res.json({ message: 'Nota registrada' });
 });
 

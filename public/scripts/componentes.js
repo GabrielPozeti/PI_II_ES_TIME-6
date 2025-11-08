@@ -93,6 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const th = document.createElement('th'); th.textContent = c.sigla || c.nome;
       trh.appendChild(th);
     }
+    const thFinal = document.createElement('th'); thFinal.textContent = 'Nota Final';
+    trh.appendChild(thFinal);
     thead.appendChild(trh);
     table.appendChild(thead);
 
@@ -125,6 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
         td.appendChild(input);
         tr.appendChild(td);
       }
+      const tdFinal = document.createElement('td');
+      const nf = a.nota_final;
+      tdFinal.textContent = (nf == null ? '-' : Number(nf).toFixed(2));
+      tr.appendChild(tdFinal);
       tbody.appendChild(tr);
     }
     table.appendChild(tbody);

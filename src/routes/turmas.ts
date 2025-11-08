@@ -1,5 +1,6 @@
 import express from 'express';
 import { getDb } from '../db';
+import { computeNotaFinalForAluno } from '../utils/grades';
 
 const router = express.Router();
 
@@ -15,6 +16,30 @@ router.get('/:id', async (req, res) => {
   const row = await db.get('SELECT * FROM turmas WHERE id = ?', id);
   if (!row) return res.status(404).json({ message: 'Turma não encontrada' });
   res.json(row);
+});
+
+router.get('/:id/notas', async (req, res) => {
+  const id = Number(req.params.id);
+  const db = await getDb();
+  const turma = await db.get('SELECT * FROM turmas WHERE id = ?', id);
+  if (!turma) return res.status(404).json({ message: 'Turma não encontrada' });
+  const disciplinaId = turma.disciplina_id;
+  const componentes = await db.all('SELECT * FROM componentes_nota WHERE disciplina_id = ? ORDER BY id', disciplinaId);
+  const alunos = await db.all('SELECT id, matricula, nome, nota_final FROM alunos WHERE id_turma = ? ORDER BY nome', id);
+  const compIds = componentes.map((c:any) => c.id);
+  const notasRows = compIds.length ? await db.all('SELECT aluno_id, componente_id, valor FROM notas WHERE componente_id IN (' + compIds.map(()=>'?').join(',') + ')', ...compIds) : [];
+  const notas: Record<string, number> = {};
+  for (const n of notasRows as any[]) notas[`${n.aluno_id}_${n.componente_id}`] = n.valor;
+
+  for (const a of alunos as any[]) {
+    if (a.nota_final == null) {
+      try { await computeNotaFinalForAluno(db, a.id, disciplinaId); } catch (err) { console.error('Erro compute nota_final:', err); }
+    }
+  }
+
+  const alunosFinal = await db.all('SELECT id, matricula, nome, nota_final FROM alunos WHERE id_turma = ? ORDER BY nome', id);
+
+  res.json({ componentes, alunos: alunosFinal, notas });
 });
 
 router.post('/', async (req, res) => {
