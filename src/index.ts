@@ -9,6 +9,7 @@ import disciplinasRoutes from './routes/disciplinas';
 import turmasRoutes from './routes/turmas';
 import componentesRoutes from './routes/componentes';
 import notasRoutes from './routes/notas';
+import auditoriaRoutes from './routes/auditoria';
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use('/disciplinas', disciplinasRoutes);
 app.use('/turmas', turmasRoutes);
 app.use('/componentes', componentesRoutes);
 app.use('/notas', notasRoutes);
+app.use('/auditoria', auditoriaRoutes);
 
 app.get('/protected', verifyToken, (req, res) => {
   res.json({ message: 'Acesso autorizado ao recurso protegido' });
