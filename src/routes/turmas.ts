@@ -42,6 +42,71 @@ router.get('/:id/notas', async (req, res) => {
   res.json({ componentes, alunos: alunosFinal, notas });
 });
 
+router.get('/:id/exportar', async (req, res) => {
+  const id = Number(req.params.id);
+  const db = await getDb();
+  const turma = await db.get('SELECT t.*, d.nome as disciplina_nome, d.codigo as disciplina_codigo FROM turmas t JOIN disciplinas d ON t.disciplina_id = d.id WHERE t.id = ?', id);
+  if (!turma) return res.status(404).json({ message: 'Turma não encontrada' });
+
+  const disciplinaId = turma.disciplina_id;
+  const componentes = await db.all('SELECT * FROM componentes_nota WHERE disciplina_id = ? ORDER BY id', disciplinaId);
+  const alunos = await db.all('SELECT id, matricula, nome, nota_final FROM alunos WHERE id_turma = ? ORDER BY nome', id);
+
+  const compIds = componentes.map((c:any) => c.id);
+  const notasRows = compIds.length ? await db.all('SELECT aluno_id, componente_id, valor FROM notas WHERE componente_id IN (' + compIds.map(()=>'?').join(',') + ')', ...compIds) : [];
+  const notasMap: Record<string, number> = {};
+  for (const n of notasRows as any[]) notasMap[`${n.aluno_id}_${n.componente_id}`] = n.valor;
+
+  const missing: Array<{ alunoId:number; alunoNome:string; componenteId:number; componenteNome:string }> = [];
+  for (const a of alunos as any[]) {
+    for (const c of componentes as any[]) {
+      const key = `${a.id}_${c.id}`;
+      if (notasMap[key] == null) missing.push({ alunoId: a.id, alunoNome: a.nome, componenteId: c.id, componenteNome: c.nome });
+    }
+  }
+
+  if (missing.length > 0) {
+    return res.status(400).json({ message: 'Existem notas em branco. Complete todas as notas antes de exportar.', missingCount: missing.length });
+  }
+
+  function escapeCsv(val:any) {
+    if (val == null) return '';
+    const s = String(val);
+    if (s.includes('"') || s.includes(',') || s.includes('\n') || s.includes('\r')) return '"' + s.replace(/\"/g, '\"\"') + '"';
+    return s;
+  }
+
+  const headerCols = ['Matricula', 'Nome', ...componentes.map((c:any) => c.sigla || c.nome), 'Nota Final'];
+  const rows: string[] = [];
+  rows.push(headerCols.map(escapeCsv).join(','));
+
+  for (const a of alunos as any[]) {
+    const cols: any[] = [];
+    cols.push(a.matricula || '');
+    cols.push(a.nome || '');
+    for (const c of componentes as any[]) {
+      const key = `${a.id}_${c.id}`;
+      const v = notasMap[key];
+      cols.push(typeof v === 'number' ? v.toFixed(2) : v == null ? '' : String(v));
+    }
+    cols.push(a.nota_final == null ? '' : Number(a.nota_final).toFixed(2));
+    rows.push(cols.map(escapeCsv).join(','));
+  }
+
+  const csv = rows.join('\r\n');
+
+  const now = new Date();
+  const pad = (n:number) => String(n).padStart(2, '0');
+  const timestamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+  const turmaLabel = `Turma${turma.id}`;
+  const sigla = (turma.disciplina_codigo || turma.disciplina_nome || '').toString().replace(/[^a-zA-Z0-9-_]/g, '_');
+  const filename = `${timestamp}-${turmaLabel}_${sigla || 'sem_sigla'}.csv`;
+
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.send(csv);
+});
+
 router.post('/', async (req, res) => {
   const { disciplina_id, codigo, periodo } = req.body;
   if (!disciplina_id) return res.status(400).json({ message: 'disciplina_id é obrigatório' });
