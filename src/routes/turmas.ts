@@ -107,6 +107,40 @@ router.get('/:id/exportar', async (req, res) => {
   res.send(csv);
 });
 
+router.post('/:id/import-csv', async (req, res) => {
+  const id = Number(req.params.id);
+  const csv: string = req.body && req.body.csv;
+  if (!id) return res.status(400).json({ message: 'Turma inválida' });
+  if (!csv || typeof csv !== 'string') return res.status(400).json({ message: 'CSV é obrigatório' });
+  const db = await getDb();
+  const turma = await db.get('SELECT * FROM turmas WHERE id = ?', id);
+  if (!turma) return res.status(404).json({ message: 'Turma não encontrada' });
+
+  const lines = csv.split(/\r?\n/);
+  let inserted = 0;
+  let skipped = 0;
+  let errors = 0;
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+    const cols = line.split(/[,;\t]/).map(c => c.trim());
+    const matricula = cols[0];
+    const nome = cols[1];
+    if (!matricula || !nome) { errors++; continue; }
+    try {
+      const existing = await db.get('SELECT id FROM alunos WHERE matricula = ?', matricula);
+      if (existing) { skipped++; continue; }
+      const now = new Date().toISOString();
+      await db.run('INSERT INTO alunos (matricula, nome, id_turma, criado_em, atualizado_em) VALUES (?, ?, ?, ?, ?)', matricula, nome, id, now, now);
+      inserted++;
+    } catch (err) {
+      console.error('Erro importando linha:', line, err);
+      errors++;
+    }
+  }
+  res.json({ message: 'Importação finalizada', inserted, skipped, errors });
+});
+
 router.post('/', async (req, res) => {
   const { disciplina_id, codigo, periodo } = req.body;
   if (!disciplina_id) return res.status(400).json({ message: 'disciplina_id é obrigatório' });

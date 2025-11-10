@@ -24,13 +24,13 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const { nome, sigla, descricao, disciplina_id } = req.body;
+  const { nome, sigla, descricao, disciplina_id, peso } = req.body;
   if (!nome || !disciplina_id) return res.status(400).json({ message: 'nome e disciplina_id são obrigatórios' });
   const db = await getDb();
   const disc = await db.get('SELECT id FROM disciplinas WHERE id = ?', disciplina_id);
   if (!disc) return res.status(400).json({ message: 'Disciplina inválida' });
   const now = new Date().toISOString();
-  const result = await db.run('INSERT INTO componentes_nota (nome, sigla, descricao, disciplina_id, criado_em, atualizado_em) VALUES (?, ?, ?, ?, ?, ?)', nome, sigla || null, descricao || null, disciplina_id, now, now);
+  const result = await db.run('INSERT INTO componentes_nota (nome, sigla, descricao, disciplina_id, peso, criado_em, atualizado_em) VALUES (?, ?, ?, ?, ?, ?, ?)', nome, sigla || null, descricao || null, disciplina_id, typeof peso === 'number' ? peso : 1.0, now, now);
   const id = result.lastID as number;
   const row = await db.get('SELECT * FROM componentes_nota WHERE id = ?', id);
   res.status(201).json(row);
@@ -38,7 +38,7 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const id = Number(req.params.id);
-  const { nome, sigla, descricao, disciplina_id } = req.body;
+  const { nome, sigla, descricao, disciplina_id, peso } = req.body;
   const db = await getDb();
   const existing = await db.get('SELECT * FROM componentes_nota WHERE id = ?', id);
   if (!existing) return res.status(404).json({ message: 'Componente não encontrado' });
@@ -47,7 +47,7 @@ router.put('/:id', async (req, res) => {
     if (!disc) return res.status(400).json({ message: 'Disciplina inválida' });
   }
   const atualizado_em = new Date().toISOString();
-  await db.run('UPDATE componentes_nota SET nome = ?, sigla = ?, descricao = ?, disciplina_id = ?, atualizado_em = ? WHERE id = ?', nome || existing.nome, sigla || existing.sigla, descricao || existing.descricao, disciplina_id || existing.disciplina_id, atualizado_em, id);
+  await db.run('UPDATE componentes_nota SET nome = ?, sigla = ?, descricao = ?, disciplina_id = ?, peso = ?, atualizado_em = ? WHERE id = ?', nome || existing.nome, sigla || existing.sigla, descricao || existing.descricao, disciplina_id || existing.disciplina_id, typeof peso === 'number' ? peso : existing.peso, atualizado_em, id);
   const row = await db.get('SELECT * FROM componentes_nota WHERE id = ?', id);
   res.json(row);
 });

@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { findByEmail, createDocente, findById } from '../db';
+import { findByEmail, createDocente, findById, updateDocente } from '../db';
 import fs from 'fs';
 import path from 'path';
 
@@ -52,6 +52,22 @@ router.post('/forgot-password', async (req, res) => {
   console.log('Mock email sent:\n', out);
 
   return res.json({ message: 'Se o e-mail existir, você receberá instruções' });
+});
+
+router.post('/reset-password', async (req, res) => {
+  const { token, senha } = req.body;
+  if (!token || !senha) return res.status(400).json({ message: 'Token e nova senha são obrigatórios' });
+  try {
+    const payload = jwt.verify(token, JWT_SECRET) as any;
+    const userId = payload.userId;
+    const user = await findById(userId);
+    if (!user) return res.status(400).json({ message: 'Usuário inválido' });
+    const senha_hash = bcrypt.hashSync(senha, 10);
+    await updateDocente(userId, { senha_hash });
+    return res.json({ message: 'Senha atualizada' });
+  } catch (err) {
+    return res.status(400).json({ message: 'Token inválido ou expirado' });
+  }
 });
 
 export default router;
