@@ -1,3 +1,11 @@
+
+(function(){
+  try{
+    const token = localStorage.getItem('token');
+    if(!token) { window.location.href = '/login.html'; }
+  }catch(e){  }
+})();
+
 const qs=(s)=>document.querySelector(s);
 const qsa=(s)=>Array.from(document.querySelectorAll(s));
 const listaInst=qs('#lista-instituicoes');
@@ -12,7 +20,9 @@ const modalConfirm=qs('#modal-confirm');
 const modalCancel=qs('#modal-cancel');
 let pendingDelete=null;
 async function request(method,url,body){
+  const token = localStorage.getItem('token');
   const opts={method,headers:{'Content-Type':'application/json'}};
+  if (token) opts.headers.Authorization = 'Bearer ' + token;
   if(body)opts.body=JSON.stringify(body);
   const res=await fetch(url,opts);
   if(!res.ok)throw await res.json();
@@ -64,10 +74,22 @@ async function loadTurmas(){
     const actions=document.createElement('div');actions.className='item-actions';
     const edit=document.createElement('button');edit.textContent='Editar';edit.onclick=()=>{(document.getElementById('turma-id')).value=t.id;document.getElementById('turma-codigo').value=t.codigo||'';document.getElementById('turma-periodo').value=t.periodo||'';document.getElementById('turma-disciplina').value=t.disciplina_id;};
     const del=document.createElement('button');del.textContent='Excluir';del.onclick=()=>{pendingDelete={type:'turma',id:t.id};modalText.textContent=`Confirma exclusão da turma ${t.codigo||t.id}?`;modal.className='';};
-    const exp=document.createElement('button');exp.textContent='Exportar CSV';
+      const exp=document.createElement('button');exp.textContent='Exportar CSV';
+      const imp=document.createElement('button');
+      imp.textContent='Importar alunos';
+      imp.onclick=async ()=>{
+        const csv = prompt('Cole o CSV com duas colunas (matricula, nome). Linhas adicionais serão ignoradas.');
+        if (!csv) return;
+        try {
+          await request('POST', `/turmas/${t.id}/import-csv`, { csv });
+          alert('Importação concluída');
+          await loadTurmas();
+        } catch (err) { alert(err.message || JSON.stringify(err)); }
+      };
     exp.onclick=async ()=>{
       try{
-        const r=await fetch('/turmas/'+t.id+'/exportar');
+        const token = localStorage.getItem('token');
+        const r=await fetch('/turmas/'+t.id+'/exportar', { headers: token ? { Authorization: 'Bearer ' + token } : {} });
         if(!r.ok){
           const err = await r.json().catch(()=>({message:'Erro ao exportar'}));
           return alert(err.message || 'Erro ao exportar CSV');
@@ -88,8 +110,7 @@ async function loadTurmas(){
         alert(err.message || 'Erro ao exportar CSV');
       }
     };
-    actions.appendChild(edit);actions.appendChild(del);li.appendChild(actions);listaTur.appendChild(li);
-    actions.appendChild(exp);
+      actions.appendChild(edit);actions.appendChild(del);actions.appendChild(imp);actions.appendChild(exp);li.appendChild(actions);listaTur.appendChild(li);
   }
 }
 formInst.addEventListener('submit',async e=>{e.preventDefault();const id=(document.getElementById('instituicao-id')).value;const nome=document.getElementById('instituicao-nome').value;const sigla=document.getElementById('instituicao-sigla').value;try{if(id)await request('PUT',`/instituicoes/${id}`,{nome,sigla});else await request('POST','/instituicoes',{nome,sigla});document.getElementById('instituicao-id').value='';document.getElementById('instituicao-nome').value='';document.getElementById('instituicao-sigla').value='';await loadInstituicoes()}catch(err){alert(err.message||JSON.stringify(err))}});

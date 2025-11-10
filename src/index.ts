@@ -20,12 +20,13 @@ app.use(express.json());
 app.use('/', express.static(path.join(__dirname, '..', 'public')));
 
 app.use('/auth', authRoutes);
-app.use('/instituicoes', instituicoesRoutes);
-app.use('/disciplinas', disciplinasRoutes);
-app.use('/turmas', turmasRoutes);
-app.use('/componentes', componentesRoutes);
-app.use('/notas', notasRoutes);
-app.use('/auditoria', auditoriaRoutes);
+
+app.use('/instituicoes', verifyToken, instituicoesRoutes);
+app.use('/disciplinas', verifyToken, disciplinasRoutes);
+app.use('/turmas', verifyToken, turmasRoutes);
+app.use('/componentes', verifyToken, componentesRoutes);
+app.use('/notas', verifyToken, notasRoutes);
+app.use('/auditoria', verifyToken, auditoriaRoutes);
 
 app.get('/protected', verifyToken, (req, res) => {
   res.json({ message: 'Acesso autorizado ao recurso protegido' });

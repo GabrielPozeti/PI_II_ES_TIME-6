@@ -1,5 +1,18 @@
+
+(function(){
+  try{
+    const token = localStorage.getItem('token');
+    if(!token) { window.location.href = '/login.html'; }
+  }catch(e){  }
+})();
+
 async function fetchJson(url, opts) {
-  const r = await fetch(url, opts);
+ 
+  const token = localStorage.getItem('token');
+  const finalOpts = Object.assign({}, opts || {});
+  finalOpts.headers = Object.assign({}, finalOpts.headers || {});
+  if (token && !finalOpts.headers.Authorization) finalOpts.headers.Authorization = 'Bearer ' + token;
+  const r = await fetch(url, finalOpts);
   if (!r.ok) {
     const t = await r.json().catch(()=>({ message: 'Erro' }));
     throw new Error(t.message || 'Erro na requisição');
@@ -23,16 +36,18 @@ document.addEventListener('DOMContentLoaded', () => {
   compForm.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const id = document.getElementById('compId').value;
-    const nome = document.getElementById('nome').value.trim();
-    const sigla = document.getElementById('sigla').value.trim();
-    const descricao = document.getElementById('descricao').value.trim();
+  const nome = document.getElementById('nome').value.trim();
+  const sigla = document.getElementById('sigla').value.trim();
+  const descricao = document.getElementById('descricao').value.trim();
+  const pesoRaw = document.getElementById('peso').value;
+  const peso = pesoRaw === '' ? undefined : Number(pesoRaw);
     const disciplina_id = Number(disciplinaInput.value);
     if (!nome || !disciplina_id) return alert('Nome e disciplina_id são obrigatórios');
     try {
       if (id) {
-        await fetchJson('/componentes/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, sigla, descricao, disciplina_id }) });
+        await fetchJson('/componentes/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, sigla, descricao, disciplina_id, peso }) });
       } else {
-        await fetchJson('/componentes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, sigla, descricao, disciplina_id }) });
+        await fetchJson('/componentes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, sigla, descricao, disciplina_id, peso }) });
       }
       clearForm();
       await loadDisciplina(disciplina_id);
@@ -46,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nome').value = '';
     document.getElementById('sigla').value = '';
     document.getElementById('descricao').value = '';
+    document.getElementById('peso').value = '';
   }
 
   async function loadDisciplina(disciplinaId) {
@@ -68,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('nome').value = c.nome;
         document.getElementById('sigla').value = c.sigla || '';
         document.getElementById('descricao').value = c.descricao || '';
+        document.getElementById('peso').value = (c.peso != null ? String(c.peso) : '');
       });
       const del = document.createElement('button'); del.textContent = 'Excluir';
       del.addEventListener('click', async () => {
