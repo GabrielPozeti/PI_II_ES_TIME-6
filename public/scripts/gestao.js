@@ -64,7 +64,32 @@ async function loadTurmas(){
     const actions=document.createElement('div');actions.className='item-actions';
     const edit=document.createElement('button');edit.textContent='Editar';edit.onclick=()=>{(document.getElementById('turma-id')).value=t.id;document.getElementById('turma-codigo').value=t.codigo||'';document.getElementById('turma-periodo').value=t.periodo||'';document.getElementById('turma-disciplina').value=t.disciplina_id;};
     const del=document.createElement('button');del.textContent='Excluir';del.onclick=()=>{pendingDelete={type:'turma',id:t.id};modalText.textContent=`Confirma exclusão da turma ${t.codigo||t.id}?`;modal.className='';};
+    const exp=document.createElement('button');exp.textContent='Exportar CSV';
+    exp.onclick=async ()=>{
+      try{
+        const r=await fetch('/turmas/'+t.id+'/exportar');
+        if(!r.ok){
+          const err = await r.json().catch(()=>({message:'Erro ao exportar'}));
+          return alert(err.message || 'Erro ao exportar CSV');
+        }
+        const blob = await r.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const cd = r.headers.get('content-disposition') || '';
+        const m = cd.match(/filename\s*=\s*"?([^\";]+)"?/);
+        a.download = (m && m[1]) ? m[1] : ('turma_' + t.id + '.csv');
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        alert('CSV gerado com sucesso');
+      }catch(err){
+        alert(err.message || 'Erro ao exportar CSV');
+      }
+    };
     actions.appendChild(edit);actions.appendChild(del);li.appendChild(actions);listaTur.appendChild(li);
+    actions.appendChild(exp);
   }
 }
 formInst.addEventListener('submit',async e=>{e.preventDefault();const id=(document.getElementById('instituicao-id')).value;const nome=document.getElementById('instituicao-nome').value;const sigla=document.getElementById('instituicao-sigla').value;try{if(id)await request('PUT',`/instituicoes/${id}`,{nome,sigla});else await request('POST','/instituicoes',{nome,sigla});document.getElementById('instituicao-id').value='';document.getElementById('instituicao-nome').value='';document.getElementById('instituicao-sigla').value='';await loadInstituicoes()}catch(err){alert(err.message||JSON.stringify(err))}});
