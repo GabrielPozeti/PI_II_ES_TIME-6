@@ -1,5 +1,4 @@
-/* Paleta base compartilhada para o projeto (derivada de login.css)
-   Variáveis de cor e regras globais */
+
 :root{
   --pink:#d6336c;
   --pink-dark:#a61e4d;
@@ -12,7 +11,6 @@
   --white:#ffffff;
 }
 
-/* Reset / base */
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;padding:0}
 body{
@@ -25,19 +23,15 @@ body{
 
 a{color:var(--maroon)}
 
-/* Formularios e elementos reutilizáveis */
 .input, input, select, textarea{
   font-family:inherit;
 }
 
 button{font-family:inherit}
 
-/* Pequenas utilidades */
 .container{max-width:1200px;margin:0 auto;padding:20px}
 
-/* Helpers para cores em mensagens */
 .text-danger{color:#9b1c40}
 .text-muted{color:var(--muted)}
 
-/* Melhor contraste para elementos focáveis */
 :focus{outline:2px solid rgba(166,30,77,0.12);outline-offset:2px}
