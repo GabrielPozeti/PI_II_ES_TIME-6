@@ -23,13 +23,12 @@
   </div>
   <script>
     const msg = document.getElementById('msg');
-    // request user info from server and show welcome
     fetch('/auth/me', { credentials: 'same-origin' })
       .then(r => {
         if (!r.ok) { window.location.href = '/login.html'; return null; }
         return r.json();
       })
-      .then(b => { if (b) msg.textContent = 'Bem-vindo, ' + (b.nome || 'usuário'); })
+      .then(b => { if (b) msg.textContent = 'Bem-vindo(a), ' + (b.nome || 'usuário'); })
       .catch(() => { window.location.href = '/login.html'; });
 
     document.getElementById('logout').addEventListener('click', async () => {
