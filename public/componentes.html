@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Componentes de Nota</title>
     <link rel="stylesheet" href="/styles/base.css">
+    <link rel="stylesheet" href="/styles/login.css">
     <link rel="stylesheet" href="styles/gestao.css" />
   </head>
   <body>
     <div class="container">
-      <h1>Componentes de Nota</h1>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;">
+        <h1 style="margin:0;">Componentes de Nota</h1>
+        <a class="btn" href="/dashboard.html" style="width:auto;padding:0.6rem 0.9rem;">Voltar ao Dashboard</a>
+      </div>
 
       <div>
         <label>Disciplina ID: <input id="disciplinaId" type="number" /></label>
@@ -33,6 +37,10 @@
 
       <section id="matrizSection">
         <h2>Matriz Alunos × Componentes</h2>
+        <div>
+          <label>Nota Final (fórmula): <input id="formulaInput" style="width:60%" placeholder="Ex: (P1 + P2 + P3) / 3" /></label>
+          <button id="saveFormulaBtn">Salvar Fórmula</button>
+        </div>
         <div id="matrizContainer">Carregue uma disciplina para ver a matriz.</div>
       </section>
     </div>

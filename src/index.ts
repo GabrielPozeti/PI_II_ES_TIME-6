@@ -4,18 +4,33 @@ import path from 'path';
 import cors from 'cors';
 import authRoutes from './routes/auth';
 import { verifyToken } from './middleware/auth';
+import session from 'express-session';
 import instituicoesRoutes from './routes/instituicoes';
 import disciplinasRoutes from './routes/disciplinas';
 import turmasRoutes from './routes/turmas';
 import componentesRoutes from './routes/componentes';
 import notasRoutes from './routes/notas';
 import auditoriaRoutes from './routes/auditoria';
+import alunosRoutes from './routes/alunos';
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-session-secret';
+app.use(session({
+  secret: SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false }
+}));
+
+// Redireciona a raiz para a página de login
+app.get('/', (req, res) => {
+  res.redirect('/login.html');
+});
 
 app.use('/', express.static(path.join(__dirname, '..', 'public')));
 
@@ -27,6 +42,7 @@ app.use('/turmas', verifyToken, turmasRoutes);
 app.use('/componentes', verifyToken, componentesRoutes);
 app.use('/notas', verifyToken, notasRoutes);
 app.use('/auditoria', verifyToken, auditoriaRoutes);
+app.use('/alunos', verifyToken, alunosRoutes);
 
 app.get('/protected', verifyToken, (req, res) => {
   res.json({ message: 'Acesso autorizado ao recurso protegido' });

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db");
+const grades_1 = require("../utils/grades");
 const router = express_1.default.Router();
 router.get('/', async (req, res) => {
     const disciplina_id = req.query.disciplina_id ? Number(req.query.disciplina_id) : undefined;
@@ -25,7 +26,7 @@ router.get('/:id', async (req, res) => {
     res.json(row);
 });
 router.post('/', async (req, res) => {
-    const { nome, sigla, descricao, disciplina_id } = req.body;
+    const { nome, sigla, descricao, disciplina_id, peso } = req.body;
     if (!nome || !disciplina_id)
         return res.status(400).json({ message: 'nome e disciplina_id são obrigatórios' });
     const db = await (0, db_1.getDb)();
@@ -33,14 +34,14 @@ router.post('/', async (req, res) => {
     if (!disc)
         return res.status(400).json({ message: 'Disciplina inválida' });
     const now = new Date().toISOString();
-    const result = await db.run('INSERT INTO componentes_nota (nome, sigla, descricao, disciplina_id, criado_em, atualizado_em) VALUES (?, ?, ?, ?, ?, ?)', nome, sigla || null, descricao || null, disciplina_id, now, now);
+    const result = await db.run('INSERT INTO componentes_nota (nome, sigla, descricao, disciplina_id, peso, criado_em, atualizado_em) VALUES (?, ?, ?, ?, ?, ?, ?)', nome, sigla || null, descricao || null, disciplina_id, typeof peso === 'number' ? peso : 1.0, now, now);
     const id = result.lastID;
     const row = await db.get('SELECT * FROM componentes_nota WHERE id = ?', id);
     res.status(201).json(row);
 });
 router.put('/:id', async (req, res) => {
     const id = Number(req.params.id);
-    const { nome, sigla, descricao, disciplina_id } = req.body;
+    const { nome, sigla, descricao, disciplina_id, peso } = req.body;
     const db = await (0, db_1.getDb)();
     const existing = await db.get('SELECT * FROM componentes_nota WHERE id = ?', id);
     if (!existing)
@@ -51,7 +52,7 @@ router.put('/:id', async (req, res) => {
             return res.status(400).json({ message: 'Disciplina inválida' });
     }
     const atualizado_em = new Date().toISOString();
-    await db.run('UPDATE componentes_nota SET nome = ?, sigla = ?, descricao = ?, disciplina_id = ?, atualizado_em = ? WHERE id = ?', nome || existing.nome, sigla || existing.sigla, descricao || existing.descricao, disciplina_id || existing.disciplina_id, atualizado_em, id);
+    await db.run('UPDATE componentes_nota SET nome = ?, sigla = ?, descricao = ?, disciplina_id = ?, peso = ?, atualizado_em = ? WHERE id = ?', nome || existing.nome, sigla || existing.sigla, descricao || existing.descricao, disciplina_id || existing.disciplina_id, typeof peso === 'number' ? peso : existing.peso, atualizado_em, id);
     const row = await db.get('SELECT * FROM componentes_nota WHERE id = ?', id);
     res.json(row);
 });
@@ -69,7 +70,7 @@ router.get('/matriz/:disciplinaId', async (req, res) => {
     const db = await (0, db_1.getDb)();
     const componentes = await db.all('SELECT * FROM componentes_nota WHERE disciplina_id = ? ORDER BY id', disciplinaId);
     const alunos = await db.all(`
-    SELECT a.id, a.matricula, a.nome, a.id_turma
+    SELECT a.id, a.matricula, a.nome, a.id_turma, a.nota_final
     FROM alunos a
     JOIN turmas t ON a.id_turma = t.id
     WHERE t.disciplina_id = ?
@@ -101,6 +102,12 @@ router.post('/notas', async (req, res) => {
     const now = new Date().toISOString();
     await db.run(`INSERT INTO notas (aluno_id, componente_id, valor, criado_em, atualizado_em) VALUES (?, ?, ?, ?, ?)
      ON CONFLICT(aluno_id, componente_id) DO UPDATE SET valor = excluded.valor, atualizado_em = excluded.atualizado_em`, aluno_id, componente_id, v, now, now);
+    try {
+        await (0, grades_1.computeNotaFinalForAluno)(db, aluno_id, aluno.disciplina_id);
+    }
+    catch (err) {
+        console.error('Erro ao calcular nota_final:', err);
+    }
     res.json({ message: 'Nota registrada' });
 });
 exports.default = router;

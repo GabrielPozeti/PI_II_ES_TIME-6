@@ -35,6 +35,7 @@ export async function getDb() {
       nome TEXT NOT NULL,
       codigo TEXT,
       instituicao_id INTEGER NOT NULL,
+      formula TEXT,
       criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
       atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(instituicao_id) REFERENCES instituicoes(id) ON DELETE RESTRICT

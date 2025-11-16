@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Gestão - NotaDez</title>
     <link rel="stylesheet" href="/styles/base.css">
+    <link rel="stylesheet" href="/styles/login.css">
     <link rel="stylesheet" href="styles/gestao.css">
   </head>
-  <body>
+  <body class="gestao-page">
     <div class="container">
       <h1>Gestão de Instituições, Disciplinas e Turmas</h1>
+      <a class="btn" href="/dashboard.html" style="width:max-content;margin:12px auto;display:block">Voltar ao Dashboard</a>
       <div class="columns">
         <section class="col" id="col-instituicoes">
           <h2>Instituições</h2>
@@ -45,6 +47,18 @@
             <button type="button" id="turma-cancel">Cancelar</button>
           </form>
           <ul id="lista-turmas"></ul>
+        </section>
+        <section class="col" id="col-alunos">
+          <h2>Alunos</h2>
+          <form id="form-aluno">
+            <input type="hidden" id="aluno-id">
+            <input id="aluno-matricula" placeholder="Matrícula" required>
+            <input id="aluno-nome" placeholder="Nome" required>
+            <select id="aluno-turma"></select>
+            <button type="submit">Salvar</button>
+            <button type="button" id="aluno-cancel">Cancelar</button>
+          </form>
+          <ul id="lista-alunos"></ul>
         </section>
       </div>
     </div>

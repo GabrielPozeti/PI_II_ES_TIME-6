@@ -1,32 +1,41 @@
 
-(function(){
-  try{
-    const token = localStorage.getItem('token');
-    if(!token) { window.location.href = '/login.html'; }
-  }catch(e){  }
-})();
+// verify session with server; redirect to login if not authenticated
+fetch('/protected', { credentials: 'same-origin' })
+  .then(r => { if (!r.ok) window.location.href = '/login.html'; })
+  .catch(() => { window.location.href = '/login.html'; });
 
 const qs=(s)=>document.querySelector(s);
 const qsa=(s)=>Array.from(document.querySelectorAll(s));
 const listaInst=qs('#lista-instituicoes');
 const listaDisc=qs('#lista-disciplinas');
 const listaTur=qs('#lista-turmas');
+const listaAlunos = qs('#lista-alunos');
 const formInst=qs('#form-instituicao');
 const formDisc=qs('#form-disciplina');
 const formTur=qs('#form-turma');
+const formAluno = qs('#form-aluno');
 const modal=qs('#modal');
 const modalText=qs('#modal-text');
 const modalConfirm=qs('#modal-confirm');
 const modalCancel=qs('#modal-cancel');
 let pendingDelete=null;
 async function request(method,url,body){
-  const token = localStorage.getItem('token');
-  const opts={method,headers:{'Content-Type':'application/json'}};
-  if (token) opts.headers.Authorization = 'Bearer ' + token;
+  const opts={method,headers:{'Content-Type':'application/json'}, credentials: 'same-origin'};
   if(body)opts.body=JSON.stringify(body);
   const res=await fetch(url,opts);
-  if(!res.ok)throw await res.json();
-  return res.json();
+  const contentType = res.headers.get('content-type') || '';
+  // try to parse JSON when appropriate, otherwise return text for errors
+  if (!res.ok) {
+    if (contentType.includes('application/json')) {
+      const errBody = await res.json().catch(()=>({ message: 'Erro desconhecido' }));
+      throw errBody;
+    }
+    const text = await res.text().catch(()=>null);
+    throw { message: text || ('HTTP ' + res.status) };
+  }
+  if (contentType.includes('application/json')) return res.json();
+  // if success but not JSON, return raw text
+  return res.text();
 }
 async function loadInstituicoes(){
   const data=await request('GET','/instituicoes');
@@ -68,6 +77,8 @@ async function loadDisciplinas(){
 async function loadTurmas(){
   const data=await request('GET','/turmas');
   listaTur.innerHTML='';
+  const selAlunoTurma = document.getElementById('aluno-turma');
+  if (selAlunoTurma) selAlunoTurma.innerHTML = '';
   for(const t of data){
     const li=document.createElement('li');
     li.textContent=`${t.codigo?t.codigo+' - ':''}${t.periodo?t.periodo+' - ':''}${t.disciplina_nome}`;
@@ -88,8 +99,7 @@ async function loadTurmas(){
       };
     exp.onclick=async ()=>{
       try{
-        const token = localStorage.getItem('token');
-        const r=await fetch('/turmas/'+t.id+'/exportar', { headers: token ? { Authorization: 'Bearer ' + token } : {} });
+        const r=await fetch('/turmas/'+t.id+'/exportar', { credentials: 'same-origin' });
         if(!r.ok){
           const err = await r.json().catch(()=>({message:'Erro ao exportar'}));
           return alert(err.message || 'Erro ao exportar CSV');
@@ -110,8 +120,26 @@ async function loadTurmas(){
         alert(err.message || 'Erro ao exportar CSV');
       }
     };
-      actions.appendChild(edit);actions.appendChild(del);actions.appendChild(imp);actions.appendChild(exp);li.appendChild(actions);listaTur.appendChild(li);
+    actions.appendChild(edit);actions.appendChild(del);actions.appendChild(imp);actions.appendChild(exp);li.appendChild(actions);listaTur.appendChild(li);
+    if (selAlunoTurma) {
+      const opt = document.createElement('option'); opt.value = t.id; opt.textContent = (t.codigo? t.codigo + ' - ' : '') + (t.periodo? t.periodo + ' - ' : '') + (t.disciplina_nome || ('Turma ' + t.id));
+      selAlunoTurma.appendChild(opt);
+    }
   }
+}
+async function loadAlunos(){
+  try {
+    const data = await request('GET', '/alunos');
+    listaAlunos.innerHTML = '';
+    for (const a of data) {
+      const li = document.createElement('li');
+      li.textContent = `${a.matricula || ''} - ${a.nome} ${a.id_turma ? '(' + a.id_turma + ')' : ''}`;
+      const actions = document.createElement('div'); actions.className = 'item-actions';
+      const edit = document.createElement('button'); edit.textContent = 'Editar'; edit.onclick = ()=>{document.getElementById('aluno-id').value = a.id; document.getElementById('aluno-matricula').value = a.matricula||''; document.getElementById('aluno-nome').value = a.nome||''; if(document.getElementById('aluno-turma')) document.getElementById('aluno-turma').value = a.id_turma; };
+      const del = document.createElement('button'); del.textContent = 'Excluir'; del.onclick = ()=>{pendingDelete={type:'aluno',id:a.id};modalText.textContent=`Confirma exclusão do aluno ${a.nome}?`;modal.className='';};
+      actions.appendChild(edit); actions.appendChild(del); li.appendChild(actions); listaAlunos.appendChild(li);
+    }
+  } catch (err) { console.error('Erro carregando alunos', err); }
 }
 formInst.addEventListener('submit',async e=>{e.preventDefault();const id=(document.getElementById('instituicao-id')).value;const nome=document.getElementById('instituicao-nome').value;const sigla=document.getElementById('instituicao-sigla').value;try{if(id)await request('PUT',`/instituicoes/${id}`,{nome,sigla});else await request('POST','/instituicoes',{nome,sigla});document.getElementById('instituicao-id').value='';document.getElementById('instituicao-nome').value='';document.getElementById('instituicao-sigla').value='';await loadInstituicoes()}catch(err){alert(err.message||JSON.stringify(err))}});
 document.getElementById('instituicao-cancel').addEventListener('click',()=>{document.getElementById('instituicao-id').value='';document.getElementById('instituicao-nome').value='';document.getElementById('instituicao-sigla').value=''});
@@ -120,5 +148,30 @@ document.getElementById('disciplina-cancel').addEventListener('click',()=>{docum
 formTur.addEventListener('submit',async e=>{e.preventDefault();const id=(document.getElementById('turma-id')).value;const codigo=document.getElementById('turma-codigo').value;const periodo=document.getElementById('turma-periodo').value;const disciplina_id=document.getElementById('turma-disciplina').value;try{if(id)await request('PUT',`/turmas/${id}`,{codigo,periodo,disciplina_id});else await request('POST','/turmas',{codigo,periodo,disciplina_id});document.getElementById('turma-id').value='';document.getElementById('turma-codigo').value='';document.getElementById('turma-periodo').value='';await loadTurmas()}catch(err){alert(err.message||JSON.stringify(err))}});
 document.getElementById('turma-cancel').addEventListener('click',()=>{document.getElementById('turma-id').value='';document.getElementById('turma-codigo').value='';document.getElementById('turma-periodo').value=''});
 modalCancel.addEventListener('click',()=>{pendingDelete=null;modal.className='modal-hidden'});
-modalConfirm.addEventListener('click',async ()=>{if(!pendingDelete){modal.className='modal-hidden';return}try{if(pendingDelete.type==='instituicao')await request('DELETE',`/instituicoes/${pendingDelete.id}`);else if(pendingDelete.type==='disciplina')await request('DELETE',`/disciplinas/${pendingDelete.id}`);else if(pendingDelete.type==='turma')await request('DELETE',`/turmas/${pendingDelete.id}`);pendingDelete=null;modal.className='modal-hidden';await loadInstituicoes()}catch(err){modal.className='modal-hidden';alert(err.message||JSON.stringify(err))}});
-loadInstituicoes();
+modalConfirm.addEventListener('click',async ()=>{
+  if(!pendingDelete){modal.className='modal-hidden';return}
+  try{
+    if(pendingDelete.type==='instituicao')await request('DELETE',`/instituicoes/${pendingDelete.id}`);
+    else if(pendingDelete.type==='disciplina')await request('DELETE',`/disciplinas/${pendingDelete.id}`);
+    else if(pendingDelete.type==='turma')await request('DELETE',`/turmas/${pendingDelete.id}`);
+    else if(pendingDelete.type==='aluno')await request('DELETE',`/alunos/${pendingDelete.id}`);
+    pendingDelete=null;modal.className='modal-hidden';await loadInstituicoes();await loadAlunos();
+  }catch(err){modal.className='modal-hidden';alert(err.message||JSON.stringify(err))}
+});
+
+formAluno && formAluno.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const id = (document.getElementById('aluno-id')).value;
+  const matricula = document.getElementById('aluno-matricula').value;
+  const nome = document.getElementById('aluno-nome').value;
+  const id_turma = document.getElementById('aluno-turma').value;
+  try{
+    if(id) await request('PUT', `/alunos/${id}`, { matricula, nome, id_turma });
+    else await request('POST', '/alunos', { matricula, nome, id_turma });
+    document.getElementById('aluno-id').value='';document.getElementById('aluno-matricula').value='';document.getElementById('aluno-nome').value='';
+    await loadAlunos();
+  }catch(err){alert(err.message||JSON.stringify(err))}
+});
+document.getElementById('aluno-cancel') && document.getElementById('aluno-cancel').addEventListener('click', ()=>{document.getElementById('aluno-id').value='';document.getElementById('aluno-matricula').value='';document.getElementById('aluno-nome').value='';});
+
+loadInstituicoes().then(()=>loadAlunos());

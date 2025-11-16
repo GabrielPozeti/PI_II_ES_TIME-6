@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db");
+const grades_1 = require("../utils/grades");
 const router = express_1.default.Router();
 router.get('/componente/:id', async (req, res) => {
     const componenteId = Number(req.params.id);
@@ -36,6 +37,7 @@ router.put('/', async (req, res) => {
     await db.run('BEGIN TRANSACTION');
     try {
         const now = new Date().toISOString();
+        const affectedAlunoIds = new Set();
         for (const item of notas) {
             const aluno_id = Number(item.aluno_id);
             const raw = item.valor;
@@ -59,8 +61,17 @@ router.put('/', async (req, res) => {
             }
             await db.run(`INSERT INTO notas (aluno_id, componente_id, valor, atualizado_em) VALUES (?, ?, ?, ?)
          ON CONFLICT(aluno_id, componente_id) DO UPDATE SET valor = excluded.valor, atualizado_em = excluded.atualizado_em`, aluno_id, componente_id, v, now);
+            affectedAlunoIds.add(aluno_id);
         }
         await db.run('COMMIT');
+        try {
+            for (const a of Array.from(affectedAlunoIds)) {
+                await (0, grades_1.computeNotaFinalForAluno)(db, a, comp.disciplina_id);
+            }
+        }
+        catch (err) {
+            console.error('Erro ao recalcular nota_final após atualização em lote:', err);
+        }
         res.json({ message: 'Notas atualizadas' });
     }
     catch (err) {

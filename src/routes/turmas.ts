@@ -141,6 +141,44 @@ router.post('/:id/import-csv', async (req, res) => {
   res.json({ message: 'Importação finalizada', inserted, skipped, errors });
 });
 
+router.post('/:id/import-json', async (req, res) => {
+  const id = Number(req.params.id);
+  const payload = req.body && req.body.data;
+  if (!id) return res.status(400).json({ message: 'Turma inválida' });
+  if (!payload) return res.status(400).json({ message: 'JSON data é obrigatório no campo "data"' });
+  const db = await getDb();
+  const turma = await db.get('SELECT * FROM turmas WHERE id = ?', id);
+  if (!turma) return res.status(404).json({ message: 'Turma não encontrada' });
+
+  let items: any[] = [];
+  if (Array.isArray(payload)) {
+    items = payload;
+  } else {
+    return res.status(400).json({ message: 'Formato inválido: espere um array' });
+  }
+
+  let inserted = 0, skipped = 0, errors = 0;
+  for (const it of items) {
+    try {
+      let matricula: string | undefined;
+      let nome: string | undefined;
+      if (Array.isArray(it)) {
+        matricula = it[0]; nome = it[1];
+      } else if (typeof it === 'object' && it != null) {
+        matricula = it.matricula || it.id || it.ra || it.matricula_id;
+        nome = it.nome || it.nome_completo || it.name;
+      }
+      if (!matricula || !nome) { errors++; continue; }
+      const existing = await db.get('SELECT id FROM alunos WHERE matricula = ?', matricula);
+      if (existing) { skipped++; continue; }
+      const now = new Date().toISOString();
+      await db.run('INSERT INTO alunos (matricula, nome, id_turma, criado_em, atualizado_em) VALUES (?, ?, ?, ?, ?)', matricula, nome, id, now, now);
+      inserted++;
+    } catch (err) { console.error('Erro import JSON item', it, err); errors++; }
+  }
+  res.json({ message: 'Importação JSON finalizada', inserted, skipped, errors });
+});
+
 router.post('/', async (req, res) => {
   const { disciplina_id, codigo, periodo } = req.body;
   if (!disciplina_id) return res.status(400).json({ message: 'disciplina_id é obrigatório' });

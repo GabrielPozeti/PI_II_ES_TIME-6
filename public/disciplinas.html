@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Disciplinas</title>
+    <link rel="stylesheet" href="/styles/base.css">
+    <link rel="stylesheet" href="/styles/gestao.css">
+  </head>
+  <body>
+    <div class="container">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;">
+        <h1 style="margin:0;">Disciplinas</h1>
+        <a class="btn" href="/dashboard.html" style="width:auto;padding:0.6rem 0.9rem;">Voltar ao Dashboard</a>
+      </div>
+
+      <section>
+        <h2>Criar / Editar Disciplina</h2>
+        <form id="discForm">
+          <input type="hidden" id="discId" />
+          <label>Nome: <input id="nome" required /></label>
+          <label>Código: <input id="codigo" /></label>
+          <label>Instituição: <select id="instituicaoId"></select></label>
+          <label>Fórmula (opcional): <input id="formula" placeholder="Ex: (P1+P2+P3)/3" style="width:60%"/></label>
+          <div style="margin-top:8px;">
+            <button type="submit">Salvar</button>
+            <button type="button" id="limparBtn">Limpar</button>
+          </div>
+        </form>
+      </section>
+
+      <section style="margin-top:18px;">
+        <h2>Lista de Disciplinas</h2>
+        <ul id="lista"></ul>
+      </section>
+    </div>
+
+    <script src="/scripts/disciplinas.js"></script>
+  </body>
+</html>
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Disciplinas</title>
+  <link rel="stylesheet" href="/styles/base.css">
+  <link rel="stylesheet" href="/styles/login.css">
+</head>
+<body>
+  <div class="login-container">
+    <h1>Disciplinas</h1>
+    <p>Página de disciplinas (placeholder).</p>
+    <a class="btn" href="/dashboard.html">Voltar ao Dashboard</a>
+  </div>
+</body>
+</html>

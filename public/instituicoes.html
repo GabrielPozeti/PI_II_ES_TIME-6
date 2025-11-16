@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Instituições</title>
+    <link rel="stylesheet" href="/styles/base.css">
+    <link rel="stylesheet" href="/styles/gestao.css">
+  </head>
+  <body>
+    <div class="container">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;">
+        <h1 style="margin:0;">Instituições</h1>
+        <a class="btn" href="/dashboard.html" style="width:auto;padding:0.6rem 0.9rem;">Voltar ao Dashboard</a>
+      </div>
+
+      <section>
+        <h2>Criar / Editar Instituição</h2>
+        <form id="instForm">
+          <input type="hidden" id="instId" />
+          <label>Nome: <input id="nome" required /></label>
+          <label>Sigla: <input id="sigla" /></label>
+          <div style="margin-top:8px;"><button type="submit">Salvar</button> <button type="button" id="limparBtn">Limpar</button></div>
+        </form>
+      </section>
+
+      <section style="margin-top:18px;">
+        <h2>Lista</h2>
+        <ul id="lista"></ul>
+      </section>
+    </div>
+
+    <script src="/scripts/instituicoes.js"></script>
+  </body>
+</html>
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Instituições</title>
+  <link rel="stylesheet" href="/styles/base.css">
+  <link rel="stylesheet" href="/styles/login.css">
+</head>
+<body>
+  <div class="login-container">
+    <h1>Instituições</h1>
+    <p>Página de instituições (placeholder).</p>
+    <a class="btn" href="/dashboard.html">Voltar ao Dashboard</a>
+  </div>
+</body>
+</html>

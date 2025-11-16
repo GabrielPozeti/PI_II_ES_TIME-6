@@ -20,7 +20,7 @@ router.get('/:id', async (req, res) => {
     res.json(row);
 });
 router.post('/', async (req, res) => {
-    const { nome, codigo, instituicao_id } = req.body;
+    const { nome, codigo, instituicao_id, formula } = req.body;
     if (!nome || !instituicao_id)
         return res.status(400).json({ message: 'Nome e instituicao_id são obrigatórios' });
     const db = await (0, db_1.getDb)();
@@ -28,14 +28,14 @@ router.post('/', async (req, res) => {
     if (!inst)
         return res.status(400).json({ message: 'Instituição inválida' });
     const now = new Date().toISOString();
-    const result = await db.run('INSERT INTO disciplinas (nome, codigo, instituicao_id, criado_em, atualizado_em) VALUES (?, ?, ?, ?, ?)', nome, codigo || null, instituicao_id, now, now);
+    const result = await db.run('INSERT INTO disciplinas (nome, codigo, instituicao_id, formula, criado_em, atualizado_em) VALUES (?, ?, ?, ?, ?, ?)', nome, codigo || null, instituicao_id, formula || null, now, now);
     const id = result.lastID;
     const row = await db.get('SELECT * FROM disciplinas WHERE id = ?', id);
     res.status(201).json(row);
 });
 router.put('/:id', async (req, res) => {
     const id = Number(req.params.id);
-    const { nome, codigo, instituicao_id } = req.body;
+    const { nome, codigo, instituicao_id, formula } = req.body;
     const db = await (0, db_1.getDb)();
     const existing = await db.get('SELECT * FROM disciplinas WHERE id = ?', id);
     if (!existing)
@@ -45,8 +45,22 @@ router.put('/:id', async (req, res) => {
         if (!inst)
             return res.status(400).json({ message: 'Instituição inválida' });
     }
+    // If formula is provided, validate that all componentes of the disciplina have sigla and are present in the formula
+    if (formula != null) {
+        const componentes = await db.all('SELECT id, sigla FROM componentes_nota WHERE disciplina_id = ? ORDER BY id', id);
+        const missingSigla = componentes.filter((c) => !c.sigla || String(c.sigla).trim() === '');
+        if (missingSigla.length > 0)
+            return res.status(400).json({ message: 'Todos os componentes precisam ter sigla antes de salvar a fórmula' });
+        // verify every componente sigla appears in the formula
+        const notUsed = componentes.filter((c) => {
+            const re = new RegExp('\\b' + String(c.sigla).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\b');
+            return !re.test(formula);
+        });
+        if (notUsed.length > 0)
+            return res.status(400).json({ message: 'A fórmula deve utilizar todas as siglas dos componentes cadastrados', missing: notUsed.map((c) => c.sigla) });
+    }
     const atualizado_em = new Date().toISOString();
-    await db.run('UPDATE disciplinas SET nome = ?, codigo = ?, instituicao_id = ?, atualizado_em = ? WHERE id = ?', nome || existing.nome, codigo || existing.codigo, instituicao_id || existing.instituicao_id, atualizado_em, id);
+    await db.run('UPDATE disciplinas SET nome = ?, codigo = ?, instituicao_id = ?, formula = ?, atualizado_em = ? WHERE id = ?', nome || existing.nome, codigo || existing.codigo, instituicao_id || existing.instituicao_id, formula != null ? formula : existing.formula, atualizado_em, id);
     const row = await db.get('SELECT * FROM disciplinas WHERE id = ?', id);
     res.json(row);
 });

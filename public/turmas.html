@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Turmas</title>
+    <link rel="stylesheet" href="/styles/base.css">
+    <link rel="stylesheet" href="/styles/gestao.css">
+  </head>
+  <body>
+    <div class="container">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;">
+        <h1 style="margin:0;">Turmas</h1>
+        <a class="btn" href="/dashboard.html" style="width:auto;padding:0.6rem 0.9rem;">Voltar ao Dashboard</a>
+      </div>
+
+      <section>
+        <h2>Criar / Editar Turma</h2>
+        <form id="turmaForm">
+          <input type="hidden" id="turmaId" />
+          <label>Disciplina: <select id="disciplinaIdSelect"></select></label>
+          <label>Código: <input id="codigo" /></label>
+          <label>Período: <input id="periodo" /></label>
+          <div style="margin-top:8px;"><button type="submit">Salvar</button> <button type="button" id="limparBtn">Limpar</button></div>
+        </form>
+      </section>
+
+      <section style="margin-top:18px;">
+        <h2>Lista de Turmas</h2>
+        <ul id="lista"></ul>
+      </section>
+
+      <section style="margin-top:18px;">
+        <h2>Importar Alunos</h2>
+        <label>Turma ID: <input id="importTurmaId" type="number" /></label>
+        <div>
+          <h3>CSV (upload de arquivo)</h3>
+          <input id="csvFile" type="file" accept=".csv,text/csv" />
+          <button id="importCsvBtn">Importar CSV</button>
+        </div>
+        <div style="margin-top:8px;">
+          <h3>JSON (array)</h3>
+          <textarea id="jsonArea" rows="6" style="width:100%" placeholder='[{"matricula":"11111","nome":"Abel"}]'></textarea>
+          <button id="importJsonBtn">Importar JSON</button>
+        </div>
+      </section>
+    </div>
+
+    <script src="/scripts/turmas.js"></script>
+  </body>
+</html>
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Turmas</title>
+  <link rel="stylesheet" href="/styles/base.css">
+  <link rel="stylesheet" href="/styles/login.css">
+</head>
+<body>
+  <div class="login-container">
+    <h1>Turmas</h1>
+    <p>Página de turmas (placeholder).</p>
+    <a class="btn" href="/dashboard.html">Voltar ao Dashboard</a>
+  </div>
+</body>
+</html>
