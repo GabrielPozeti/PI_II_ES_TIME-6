@@ -16,6 +16,7 @@ const turmas_1 = __importDefault(require("./routes/turmas"));
 const componentes_1 = __importDefault(require("./routes/componentes"));
 const notas_1 = __importDefault(require("./routes/notas"));
 const auditoria_1 = __importDefault(require("./routes/auditoria"));
+const alunos_1 = __importDefault(require("./routes/alunos"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
@@ -35,6 +36,7 @@ app.use('/turmas', auth_2.verifyToken, turmas_1.default);
 app.use('/componentes', auth_2.verifyToken, componentes_1.default);
 app.use('/notas', auth_2.verifyToken, notas_1.default);
 app.use('/auditoria', auth_2.verifyToken, auditoria_1.default);
+app.use('/alunos', auth_2.verifyToken, alunos_1.default);
 app.get('/protected', auth_2.verifyToken, (req, res) => {
     res.json({ message: 'Acesso autorizado ao recurso protegido' });
 });
