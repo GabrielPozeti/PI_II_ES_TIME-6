@@ -3,11 +3,72 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.computeNotaFinalForAluno = computeNotaFinalForAluno;
 exports.computeNotaFinalForAlunos = computeNotaFinalForAlunos;
 async function computeNotaFinalForAluno(db, alunoId, disciplinaId) {
-    const componentes = await db.all('SELECT id, COALESCE(peso, 1.0) as peso FROM componentes_nota WHERE disciplina_id = ? ORDER BY id', disciplinaId);
+    // Check if there is a formula defined for the disciplina
+    const disciplina = await db.get('SELECT formula FROM disciplinas WHERE id = ?', disciplinaId);
+    const componentes = await db.all('SELECT id, COALESCE(peso, 1.0) as peso, sigla FROM componentes_nota WHERE disciplina_id = ? ORDER BY id', disciplinaId);
     if (!componentes || componentes.length === 0) {
         await db.run('UPDATE alunos SET nota_final = NULL, atualizado_em = ? WHERE id = ?', new Date().toISOString(), alunoId);
         return;
     }
+    // If a formula exists, try to compute using the formula and component siglas
+    if (disciplina && disciplina.formula) {
+        const formula = disciplina.formula;
+        // fetch all notas for the aluno for this disciplina
+        const notasRows = await db.all(`SELECT n.componente_id as componente_id, n.valor as valor FROM notas n JOIN componentes_nota c ON n.componente_id = c.id WHERE n.aluno_id = ? AND c.disciplina_id = ?`, alunoId, disciplinaId);
+        const notasMap = {};
+        for (const nr of notasRows)
+            notasMap[nr.componente_id] = nr.valor;
+        // build map sigla -> valor
+        const siglaMap = {};
+        for (const c of componentes) {
+            const val = notasMap[c.id];
+            siglaMap[c.sigla] = val == null ? null : Number(val);
+        }
+        // If any sigla referenced in formula is missing a nota, set nota_final = NULL
+        // We'll check that every component sigla used in formula has a numeric value
+        let expr = String(formula);
+        for (const c of componentes) {
+            const s = c.sigla;
+            const re = new RegExp('\\b' + String(s).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\b', 'g');
+            if (re.test(expr)) {
+                const v = siglaMap[s];
+                if (v == null) {
+                    await db.run('UPDATE alunos SET nota_final = NULL, atualizado_em = ? WHERE id = ?', new Date().toISOString(), alunoId);
+                    return;
+                }
+                // replace all occurrences with numeric literal
+                expr = expr.replace(re, String(Number(v)));
+            }
+        }
+        // validate resulting expression contains only safe characters
+        if (!/^[0-9+\-*/().\s]+$/.test(expr)) {
+            await db.run('UPDATE alunos SET nota_final = NULL, atualizado_em = ? WHERE id = ?', new Date().toISOString(), alunoId);
+            return;
+        }
+        try {
+            // evaluate safely
+            // eslint-disable-next-line no-new-func
+            const value = Function('return ' + expr)();
+            let nota = Number(value);
+            if (!Number.isFinite(nota) || Number.isNaN(nota)) {
+                await db.run('UPDATE alunos SET nota_final = NULL, atualizado_em = ? WHERE id = ?', new Date().toISOString(), alunoId);
+                return;
+            }
+            // clamp and round to two decimals
+            if (nota < 0)
+                nota = 0;
+            if (nota > 10)
+                nota = 10;
+            nota = Math.round(nota * 100) / 100;
+            await db.run('UPDATE alunos SET nota_final = ?, atualizado_em = ? WHERE id = ?', nota, new Date().toISOString(), alunoId);
+            return;
+        }
+        catch (err) {
+            await db.run('UPDATE alunos SET nota_final = NULL, atualizado_em = ? WHERE id = ?', new Date().toISOString(), alunoId);
+            return;
+        }
+    }
+    // Fallback: weighted average (previous behavior) if no formula
     const rows = await db.all(`SELECT n.valor as valor, COALESCE(c.peso, 1.0) as peso
      FROM notas n
      JOIN componentes_nota c ON n.componente_id = c.id

@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const compForm = document.getElementById('componenteForm');
   const compList = document.getElementById('componentesList');
   const matrizContainer = document.getElementById('matrizContainer');
+  const formulaInput = document.getElementById('formulaInput');
+  const saveFormulaBtn = document.getElementById('saveFormulaBtn');
 
   if (qs('disciplinaId')) disciplinaInput.value = qs('disciplinaId');
 
@@ -64,9 +66,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!disciplinaId) return alert('Informe o ID da disciplina');
     try {
       const data = await fetchJson('/componentes/matriz/' + disciplinaId);
+      const disciplina = await fetchJson('/disciplinas/' + disciplinaId);
+      if (formulaInput) formulaInput.value = disciplina.formula || '';
       renderComponentes(data.componentes);
       renderMatriz(data.alunos, data.componentes, data.notas);
     } catch (err) { alert(err.message); }
+  }
+
+  if (saveFormulaBtn) {
+    saveFormulaBtn.addEventListener('click', async () => {
+      const disciplina_id = Number(disciplinaInput.value);
+      if (!disciplina_id) return alert('Informe o ID da disciplina');
+      const formula = formulaInput.value.trim();
+      try {
+        await fetchJson('/disciplinas/' + disciplina_id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ formula }) });
+        alert('Fórmula salva com sucesso');
+        // reload matrix to compute nota_final
+        await loadDisciplina(disciplina_id);
+      } catch (err) { alert(err.message); }
+    });
   }
 
   function renderComponentes(componentes) {
