@@ -10,20 +10,35 @@
   <div class="login-container">
     <h1>Dashboard</h1>
     <p id="msg">Verificando autenticação...</p>
-    <button id="logout" class="btn" style="margin-top:1rem">Sair</button>
+
+    <div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:1rem">
+      <a class="btn" href="/componentes.html">Componentes</a>
+      <a class="btn" href="/gestao.html">Gestão</a>
+      <a class="btn" href="/disciplinas.html">Disciplinas</a>
+      <a class="btn" href="/notas.html">Notas</a>
+      <a class="btn" href="/turmas.html">Turmas</a>
+      <a class="btn" href="/instituicoes.html">Instituições</a>
+      <button id="logout" class="btn" style="margin-top:0.6rem;background:#6b7280">Sair</button>
+    </div>
   </div>
   <script>
-    const token = localStorage.getItem('token');
     const msg = document.getElementById('msg');
-    if (!token) {
-      window.location.href = '/login.html';
-    } else {
-      fetch('/protected', { headers: { Authorization: 'Bearer ' + token } })
-        .then(r => r.json())
-        .then(b => { msg.textContent = b.message || 'Autenticado'; })
-        .catch(() => { localStorage.removeItem('token'); window.location.href = '/login.html'; });
-    }
-    document.getElementById('logout').addEventListener('click', () => { localStorage.removeItem('token'); window.location.href = '/login.html'; });
+    // request user info from server and show welcome
+    fetch('/auth/me', { credentials: 'same-origin' })
+      .then(r => {
+        if (!r.ok) { window.location.href = '/login.html'; return null; }
+        return r.json();
+      })
+      .then(b => { if (b) msg.textContent = 'Bem-vindo, ' + (b.nome || 'usuário'); })
+      .catch(() => { window.location.href = '/login.html'; });
+
+    document.getElementById('logout').addEventListener('click', async () => {
+      try {
+        await fetch('/auth/logout', { method: 'POST', credentials: 'same-origin' });
+      } finally {
+        window.location.href = '/login.html';
+      }
+    });
   </script>
 </body>
 </html>

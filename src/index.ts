@@ -4,6 +4,7 @@ import path from 'path';
 import cors from 'cors';
 import authRoutes from './routes/auth';
 import { verifyToken } from './middleware/auth';
+import session from 'express-session';
 import instituicoesRoutes from './routes/instituicoes';
 import disciplinasRoutes from './routes/disciplinas';
 import turmasRoutes from './routes/turmas';
@@ -16,6 +17,14 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-session-secret';
+app.use(session({
+  secret: SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false }
+}));
 
 app.use('/', express.static(path.join(__dirname, '..', 'public')));
 

@@ -5,12 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const crypto_1 = __importDefault(require("crypto"));
 const db_1 = require("../db");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const router = express_1.default.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 router.post('/register', async (req, res) => {
     const { nome, email, telefone, senha } = req.body;
     if (!nome || !email || !senha)
@@ -32,8 +31,8 @@ router.post('/login', async (req, res) => {
     const match = bcryptjs_1.default.compareSync(senha, row.senha_hash);
     if (!match)
         return res.status(401).json({ message: 'Credenciais inválidas' });
-    const token = jsonwebtoken_1.default.sign({ userId: row.id }, JWT_SECRET, { expiresIn: '1h' });
-    return res.json({ token, user: { id: row.id, nome: row.nome, email: row.email, telefone: row.telefone } });
+    req.session.userId = row.id;
+    return res.json({ message: 'Logado', user: { id: row.id, nome: row.nome, email: row.email, telefone: row.telefone } });
 });
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
@@ -43,14 +42,78 @@ router.post('/forgot-password', async (req, res) => {
     if (!row) {
         return res.json({ message: 'Se o e-mail existir, você receberá instruções' });
     }
-    const token = jsonwebtoken_1.default.sign({ userId: row.id }, JWT_SECRET, { expiresIn: '15m' });
+    const token = crypto_1.default.randomBytes(24).toString('hex');
+    const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
+    const dataDir = path_1.default.resolve(__dirname, '..', 'data');
+    const tokensFile = path_1.default.join(dataDir, 'reset_tokens.json');
+    let tokens = {};
+    if (fs_1.default.existsSync(tokensFile)) {
+        try {
+            tokens = JSON.parse(fs_1.default.readFileSync(tokensFile, 'utf-8') || '{}');
+        }
+        catch (e) {
+            tokens = {};
+        }
+    }
+    tokens[token] = { userId: row.id, expires };
+    fs_1.default.writeFileSync(tokensFile, JSON.stringify(tokens, null, 2));
     const resetLink = `http://localhost:3000/reset-password.html?token=${token}`;
     const out = `To: ${email}\nSubject: Recuperação de senha\nLink: ${resetLink}\n\n`;
-    const dataDir = path_1.default.resolve(__dirname, '..', 'data');
     if (!fs_1.default.existsSync(dataDir))
         fs_1.default.mkdirSync(dataDir, { recursive: true });
     fs_1.default.appendFileSync(path_1.default.join(dataDir, 'mock_emails.txt'), out);
     console.log('Mock email sent:\n', out);
     return res.json({ message: 'Se o e-mail existir, você receberá instruções' });
+});
+router.post('/reset-password', async (req, res) => {
+    const { token, senha } = req.body;
+    if (!token || !senha)
+        return res.status(400).json({ message: 'Token e nova senha são obrigatórios' });
+    try {
+        const dataDir = path_1.default.resolve(__dirname, '..', 'data');
+        const tokensFile = path_1.default.join(dataDir, 'reset_tokens.json');
+        if (!fs_1.default.existsSync(tokensFile))
+            return res.status(400).json({ message: 'Token inválido ou expirado' });
+        let tokens = {};
+        try {
+            tokens = JSON.parse(fs_1.default.readFileSync(tokensFile, 'utf-8') || '{}');
+        }
+        catch (e) {
+            tokens = {};
+        }
+        const record = tokens[token];
+        if (!record || record.expires < Date.now())
+            return res.status(400).json({ message: 'Token inválido ou expirado' });
+        const userId = record.userId;
+        const user = await (0, db_1.findById)(userId);
+        if (!user)
+            return res.status(400).json({ message: 'Usuário inválido' });
+        const senha_hash = bcryptjs_1.default.hashSync(senha, 10);
+        await (0, db_1.updateDocente)(userId, { senha_hash });
+        // remove token
+        delete tokens[token];
+        fs_1.default.writeFileSync(tokensFile, JSON.stringify(tokens, null, 2));
+        return res.json({ message: 'Senha atualizada' });
+    }
+    catch (err) {
+        return res.status(400).json({ message: 'Erro ao processar solicitação' });
+    }
+});
+router.post('/logout', (req, res) => {
+    var _a;
+    const s = req.session;
+    if (s) {
+        (_a = s.destroy) === null || _a === void 0 ? void 0 : _a.call(s, () => { });
+    }
+    return res.json({ message: 'Desconectado' });
+});
+router.get('/me', async (req, res) => {
+    const s = req.session;
+    if (!s || !s.userId)
+        return res.status(401).json({ message: 'Não autenticado' });
+    const user = await (0, db_1.findById)(s.userId);
+    if (!user)
+        return res.status(401).json({ message: 'Usuário inválido' });
+    return res.json({ id: user.id, nome: user.nome, email: user.email, telefone: user.telefone });
 });
 exports.default = router;

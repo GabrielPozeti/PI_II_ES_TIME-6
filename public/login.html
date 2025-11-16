@@ -42,8 +42,7 @@
         });
         const body = await res.json();
         if (!res.ok) throw new Error(body.message || 'Erro');
-        localStorage.setItem('token', body.token);
-        // Redirect to dashboard
+        // Session created on server side; redirect to dashboard
         window.location.href = '/dashboard.html';
       } catch (err) {
         errorEl.textContent = err.message || 'Erro no login';

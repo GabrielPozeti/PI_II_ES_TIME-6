@@ -1,17 +1,13 @@
 
-(function(){
-  try{
-    const token = localStorage.getItem('token');
-    if(!token) { window.location.href = '/login.html'; }
-  }catch(e){  }
-})();
+// verify session with server; redirect to login if not authenticated
+fetch('/protected', { credentials: 'same-origin' })
+  .then(r => { if (!r.ok) window.location.href = '/login.html'; })
+  .catch(() => { window.location.href = '/login.html'; });
 
 async function fetchJson(url, opts) {
- 
-  const token = localStorage.getItem('token');
   const finalOpts = Object.assign({}, opts || {});
   finalOpts.headers = Object.assign({}, finalOpts.headers || {});
-  if (token && !finalOpts.headers.Authorization) finalOpts.headers.Authorization = 'Bearer ' + token;
+  finalOpts.credentials = 'same-origin';
   const r = await fetch(url, finalOpts);
   if (!r.ok) {
     const t = await r.json().catch(()=>({ message: 'Erro' }));

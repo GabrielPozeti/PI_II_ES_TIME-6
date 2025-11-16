@@ -1,12 +1,11 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { findByEmail, createDocente, findById, updateDocente } from '../db';
 import fs from 'fs';
 import path from 'path';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 router.post('/register', async (req, res) => {
   const { nome, email, telefone, senha } = req.body;
@@ -30,8 +29,8 @@ router.post('/login', async (req, res) => {
   const match = bcrypt.compareSync(senha, row.senha_hash);
   if (!match) return res.status(401).json({ message: 'Credenciais inválidas' });
 
-  const token = jwt.sign({ userId: row.id }, JWT_SECRET, { expiresIn: '1h' });
-  return res.json({ token, user: { id: row.id, nome: row.nome, email: row.email, telefone: row.telefone } });
+  ((req as any).session as any).userId = row.id;
+  return res.json({ message: 'Logado', user: { id: row.id, nome: row.nome, email: row.email, telefone: row.telefone } });
 });
 
 router.post('/forgot-password', async (req, res) => {
@@ -42,11 +41,19 @@ router.post('/forgot-password', async (req, res) => {
   if (!row) {
     return res.json({ message: 'Se o e-mail existir, você receberá instruções' });
   }
-  const token = jwt.sign({ userId: row.id }, JWT_SECRET, { expiresIn: '15m' });
+  const token = crypto.randomBytes(24).toString('hex');
+  const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
+  const dataDir = path.resolve(__dirname, '..', 'data');
+  const tokensFile = path.join(dataDir, 'reset_tokens.json');
+  let tokens: Record<string, { userId: number; expires: number }> = {};
+  if (fs.existsSync(tokensFile)) {
+    try { tokens = JSON.parse(fs.readFileSync(tokensFile, 'utf-8') || '{}'); } catch (e) { tokens = {}; }
+  }
+  tokens[token] = { userId: row.id, expires };
+  fs.writeFileSync(tokensFile, JSON.stringify(tokens, null, 2));
   const resetLink = `http://localhost:3000/reset-password.html?token=${token}`;
 
   const out = `To: ${email}\nSubject: Recuperação de senha\nLink: ${resetLink}\n\n`;
-  const dataDir = path.resolve(__dirname, '..', 'data');
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
   fs.appendFileSync(path.join(dataDir, 'mock_emails.txt'), out);
   console.log('Mock email sent:\n', out);
@@ -58,16 +65,41 @@ router.post('/reset-password', async (req, res) => {
   const { token, senha } = req.body;
   if (!token || !senha) return res.status(400).json({ message: 'Token e nova senha são obrigatórios' });
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as any;
-    const userId = payload.userId;
+    const dataDir = path.resolve(__dirname, '..', 'data');
+    const tokensFile = path.join(dataDir, 'reset_tokens.json');
+    if (!fs.existsSync(tokensFile)) return res.status(400).json({ message: 'Token inválido ou expirado' });
+    let tokens: Record<string, { userId: number; expires: number }> = {};
+    try { tokens = JSON.parse(fs.readFileSync(tokensFile, 'utf-8') || '{}'); } catch (e) { tokens = {}; }
+    const record = tokens[token];
+    if (!record || record.expires < Date.now()) return res.status(400).json({ message: 'Token inválido ou expirado' });
+    const userId = record.userId;
     const user = await findById(userId);
     if (!user) return res.status(400).json({ message: 'Usuário inválido' });
     const senha_hash = bcrypt.hashSync(senha, 10);
     await updateDocente(userId, { senha_hash });
+    // remove token
+    delete tokens[token];
+    fs.writeFileSync(tokensFile, JSON.stringify(tokens, null, 2));
     return res.json({ message: 'Senha atualizada' });
   } catch (err) {
-    return res.status(400).json({ message: 'Token inválido ou expirado' });
+    return res.status(400).json({ message: 'Erro ao processar solicitação' });
   }
+});
+
+router.post('/logout', (req, res) => {
+  const s = (req as any).session;
+  if (s) {
+    s.destroy?.(() => { /* ignore */ });
+  }
+  return res.json({ message: 'Desconectado' });
+});
+
+router.get('/me', async (req, res) => {
+  const s = (req as any).session;
+  if (!s || !s.userId) return res.status(401).json({ message: 'Não autenticado' });
+  const user = await findById(s.userId);
+  if (!user) return res.status(401).json({ message: 'Usuário inválido' });
+  return res.json({ id: user.id, nome: user.nome, email: user.email, telefone: user.telefone });
 });
 
 export default router;

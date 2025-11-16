@@ -57,12 +57,22 @@ async function getDb() {
       atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(disciplina_id) REFERENCES disciplinas(id) ON DELETE RESTRICT
     );
+    CREATE TABLE IF NOT EXISTS alunos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      matricula TEXT NOT NULL UNIQUE,
+      nome TEXT NOT NULL,
+      id_turma INTEGER NOT NULL,
+      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(id_turma) REFERENCES turmas(id) ON DELETE RESTRICT
+    );
     CREATE TABLE IF NOT EXISTS componentes_nota (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL,
       sigla TEXT,
       descricao TEXT,
       disciplina_id INTEGER NOT NULL,
+      peso REAL DEFAULT 1.0,
       criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
       atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(disciplina_id) REFERENCES disciplinas(id) ON DELETE CASCADE

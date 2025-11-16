@@ -1,10 +1,8 @@
 
-(function(){
-  try{
-    const token = localStorage.getItem('token');
-    if(!token) { window.location.href = '/login.html'; }
-  }catch(e){  }
-})();
+// verify session with server; redirect to login if not authenticated
+fetch('/protected', { credentials: 'same-origin' })
+  .then(r => { if (!r.ok) window.location.href = '/login.html'; })
+  .catch(() => { window.location.href = '/login.html'; });
 
 const qs=(s)=>document.querySelector(s);
 const qsa=(s)=>Array.from(document.querySelectorAll(s));
@@ -20,9 +18,7 @@ const modalConfirm=qs('#modal-confirm');
 const modalCancel=qs('#modal-cancel');
 let pendingDelete=null;
 async function request(method,url,body){
-  const token = localStorage.getItem('token');
-  const opts={method,headers:{'Content-Type':'application/json'}};
-  if (token) opts.headers.Authorization = 'Bearer ' + token;
+  const opts={method,headers:{'Content-Type':'application/json'}, credentials: 'same-origin'};
   if(body)opts.body=JSON.stringify(body);
   const res=await fetch(url,opts);
   if(!res.ok)throw await res.json();
@@ -88,8 +84,7 @@ async function loadTurmas(){
       };
     exp.onclick=async ()=>{
       try{
-        const token = localStorage.getItem('token');
-        const r=await fetch('/turmas/'+t.id+'/exportar', { headers: token ? { Authorization: 'Bearer ' + token } : {} });
+        const r=await fetch('/turmas/'+t.id+'/exportar', { credentials: 'same-origin' });
         if(!r.ok){
           const err = await r.json().catch(()=>({message:'Erro ao exportar'}));
           return alert(err.message || 'Erro ao exportar CSV');
