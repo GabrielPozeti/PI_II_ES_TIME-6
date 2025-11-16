@@ -28,6 +28,10 @@ app.use((0, express_session_1.default)({
     saveUninitialized: false,
     cookie: { secure: false }
 }));
+// Redireciona a raiz para a página de login
+app.get('/', (req, res) => {
+    res.redirect('/login.html');
+});
 app.use('/', express_1.default.static(path_1.default.join(__dirname, '..', 'public')));
 app.use('/auth', auth_1.default);
 app.use('/instituicoes', auth_2.verifyToken, instituicoes_1.default);

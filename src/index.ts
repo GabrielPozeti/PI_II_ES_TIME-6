@@ -27,6 +27,11 @@ app.use(session({
   cookie: { secure: false }
 }));
 
+// Redireciona a raiz para a página de login
+app.get('/', (req, res) => {
+  res.redirect('/login.html');
+});
+
 app.use('/', express.static(path.join(__dirname, '..', 'public')));
 
 app.use('/auth', authRoutes);
