@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <title>Dashboard</title>
-  <link rel="stylesheet" href="/styles/base.css">
-  <link rel="stylesheet" href="/styles/login.css">
+  <link rel="stylesheet" href="./styles/base.css">
+  <link rel="stylesheet" href="./styles/login.css">
 </head>
 <body>
   <div class="login-container">
@@ -12,30 +12,31 @@
     <p id="msg">Verificando autenticação...</p>
 
     <div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:1rem">
-      <a class="btn" href="/componentes.html">Componentes</a>
-      <a class="btn" href="/gestao.html">Gestão</a>
-      <a class="btn" href="/disciplinas.html">Disciplinas</a>
-      <a class="btn" href="/notas.html">Notas</a>
-      <a class="btn" href="/turmas.html">Turmas</a>
-      <a class="btn" href="/instituicoes.html">Instituições</a>
+      <a class="btn" href="componentes.html">Componentes</a>
+      <a class="btn" href="gestao.html">Gestão</a>
+      <a class="btn" href="disciplinas.html">Disciplinas</a>
+      <a class="btn" href="notas.html">Notas</a>
+      <a class="btn" href="turmas.html">Turmas</a>
+      <a class="btn" href="instituicoes.html">Instituições</a>
       <button id="logout" class="btn" style="margin-top:0.6rem;background:#6b7280">Sair</button>
     </div>
   </div>
   <script>
     const msg = document.getElementById('msg');
-    fetch('/auth/me', { credentials: 'same-origin' })
+    await fetch('http://localhost:3000/auth/me', { credentials: 'same-origin', method: 'GET' })
       .then(r => {
-        if (!r.ok) { window.location.href = '/login.html'; return null; }
+        console.log(r);
+        if (!r.ok) { window.location.href = 'login.html'; return null; }
         return r.json();
       })
       .then(b => { if (b) msg.textContent = 'Bem-vindo(a), ' + (b.nome || 'usuário'); })
-      .catch(() => { window.location.href = '/login.html'; });
+      .catch((e) => {console.log(e); window.location.href = 'login.html'; });
 
     document.getElementById('logout').addEventListener('click', async () => {
       try {
         await fetch('/auth/logout', { method: 'POST', credentials: 'same-origin' });
       } finally {
-        window.location.href = '/login.html';
+        window.location.href = 'login.html';
       }
     });
   </script>

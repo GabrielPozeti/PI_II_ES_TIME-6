@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <title>NotaDez - Login</title>
-  <link rel="stylesheet" href="/styles/base.css">
-  <link rel="stylesheet" href="/styles/login.css">
+  <link rel="stylesheet" href="./styles/base.css">
+  <link rel="stylesheet" href="./styles/login.css">
 </head>
 <body>
   <div class="login-container">
@@ -35,7 +35,7 @@
       const email = document.getElementById('email').value.trim();
       const senha = document.getElementById('senha').value;
       try {
-        const res = await fetch('/auth/login', {
+        const res = await fetch('http://localhost:3000/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, senha })
@@ -43,7 +43,7 @@
         const body = await res.json();
         if (!res.ok) throw new Error(body.message || 'Erro');
         // Session created on server side; redirect to dashboard
-        window.location.href = '/dashboard.html';
+        window.location.href = 'dashboard.html';
       } catch (err) {
         errorEl.textContent = err.message || 'Erro no login';
         errorEl.style.display = 'block';

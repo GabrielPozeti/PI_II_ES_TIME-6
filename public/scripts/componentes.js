@@ -1,6 +1,6 @@
 
 // verify session with server; redirect to login if not authenticated
-fetch('/protected', { credentials: 'same-origin' })
+await fetch('/protected', { credentials: 'same-origin' })
   .then(r => { if (!r.ok) window.location.href = '/login.html'; })
   .catch(() => { window.location.href = '/login.html'; });
 
