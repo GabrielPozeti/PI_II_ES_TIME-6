@@ -1,0 +1,132 @@
+body.perfil-page {
+  height: auto !important;
+  display: block !important;
+  align-items: initial !important;
+  justify-content: initial !important;
+  background: var(--bg-page) !important;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: var(--maroon);
+}
+
+h2 {
+  color: var(--pink);
+  margin-top: 20px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid rgba(214, 51, 108, 0.1);
+  padding-bottom: 8px;
+}
+
+.profile-card {
+  background-color: var(--white);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(214, 51, 108, 0.08);
+  margin-bottom: 20px;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(214, 51, 108, 0.04);
+}
+
+.info-group:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--maroon);
+}
+
+.info-value {
+  color: #333;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: var(--white);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(214, 51, 108, 0.08);
+}
+
+form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 500;
+  color: var(--maroon);
+}
+
+form input,
+form select {
+  padding: 10px;
+  border: 1px solid rgba(214, 51, 108, 0.18);
+  border-radius: 6px;
+  font-size: 15px;
+  min-height: 40px;
+  font-family: inherit;
+}
+
+form button {
+  padding: 10px 16px;
+  background-color: var(--pink);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  margin-top: 8px;
+}
+
+form button:hover {
+  background-color: var(--pink-dark);
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 16px;
+  background-color: var(--pink);
+  color: var(--white);
+  text-decoration: none;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-size: 15px;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.btn:hover {
+  background-color: var(--pink-dark);
+}
+
+input:focus,
+select:focus {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 6px rgba(166, 30, 77, 0.12);
+}
