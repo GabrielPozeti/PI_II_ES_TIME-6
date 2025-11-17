@@ -35,15 +35,16 @@ router.post('/login', async (req, res) => {
 
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
-  if (!email) return res.status(400).json({ message: 'Email é obrigatório' });
+  if (!email) return res.status(400).json({ message: 'Email é obrigatório' });  
 
   const row = await findByEmail(email);
+  
   if (!row) {
     return res.json({ message: 'Se o e-mail existir, você receberá instruções' });
   }
   const token = crypto.randomBytes(24).toString('hex');
   const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
-  const dataDir = path.resolve(__dirname, '..', 'data');
+  const dataDir = path.resolve(__dirname, '..', "..", 'data');
   const tokensFile = path.join(dataDir, 'reset_tokens.json');
   let tokens: Record<string, { userId: number; expires: number }> = {};
   if (fs.existsSync(tokensFile)) {
@@ -65,11 +66,15 @@ router.post('/reset-password', async (req, res) => {
   const { token, senha } = req.body;
   if (!token || !senha) return res.status(400).json({ message: 'Token e nova senha são obrigatórios' });
   try {
-    const dataDir = path.resolve(__dirname, '..', 'data');
+    const dataDir = path.resolve(__dirname, '..', "..",'data');
     const tokensFile = path.join(dataDir, 'reset_tokens.json');
     if (!fs.existsSync(tokensFile)) return res.status(400).json({ message: 'Token inválido ou expirado' });
     let tokens: Record<string, { userId: number; expires: number }> = {};
-    try { tokens = JSON.parse(fs.readFileSync(tokensFile, 'utf-8') || '{}'); } catch (e) { tokens = {}; }
+    try { 
+      tokens = JSON.parse(fs.readFileSync(tokensFile, 'utf-8') || '{}'); 
+    } catch (e) { 
+      tokens = {}; 
+    }
     const record = tokens[token];
     if (!record || record.expires < Date.now()) return res.status(400).json({ message: 'Token inválido ou expirado' });
     const userId = record.userId;

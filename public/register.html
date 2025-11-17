@@ -51,7 +51,7 @@
         const body = await res.json();
         if (!res.ok) throw new Error(body.message || 'Erro');
         // Redirect to login
-        window.location.href = '/login.html';
+        window.location.href = 'login.html';
       } catch (err) {
         errorEl.textContent = err.message || 'Erro no cadastro';
         errorEl.style.display = 'block';
