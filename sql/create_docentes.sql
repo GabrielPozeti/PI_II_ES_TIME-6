@@ -5,6 +5,9 @@ CREATE TABLE IF NOT EXISTS docentes (
   email TEXT NOT NULL UNIQUE,
   telefone TEXT,
   senha_hash TEXT NOT NULL,
+  curso TEXT,
+  id_instituicao INTEGER,
   criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
-  atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+  atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (id_instituicao) REFERENCES instituicoes(id)
 );
