@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <title>Registrar - NotaDez</title>
-  <link rel="stylesheet" href="/styles/base.css">
-  <link rel="stylesheet" href="/styles/login.css">
+  <link rel="stylesheet" href="./styles/base.css">
+  <link rel="stylesheet" href="./styles/login.css">
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 </head>
 <body>
@@ -30,7 +30,7 @@
       <div id="error" style="color:#9b1c40;margin-bottom:8px;display:none"></div>
       <button class="btn" type="submit">Cadastrar</button>
     </form>
-    <div class="register-link">Já tem conta? <a href="/login.html">Entrar</a></div>
+    <div class="register-link">Já tem conta? <a href="login.html">Entrar</a></div>
   </div>
   <script>
     const form = document.getElementById('form');
@@ -43,7 +43,7 @@
       const telefone = document.getElementById('telefone').value.trim();
       const senha = document.getElementById('senha').value;
       try {
-        const res = await fetch('/auth/register', {
+        const res = await fetch('http://localhost:3000/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nome, email, telefone, senha })
@@ -51,7 +51,7 @@
         const body = await res.json();
         if (!res.ok) throw new Error(body.message || 'Erro');
         // Redirect to login
-        window.location.href = '/login.html';
+        window.location.href = 'login.html';
       } catch (err) {
         errorEl.textContent = err.message || 'Erro no cadastro';
         errorEl.style.display = 'block';
