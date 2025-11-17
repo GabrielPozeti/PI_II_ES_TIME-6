@@ -19,9 +19,9 @@
         <form id="discForm">
           <input type="hidden" id="discId" />
           <label>Nome: <input id="nome" required /></label>
+          <label>Sigla: <input id="sigla" required /></label>
           <label>Código: <input id="codigo" /></label>
-          <label>Instituição: <select id="instituicaoId"></select></label>
-          <label>Fórmula (opcional): <input id="formula" placeholder="Ex: (P1+P2+P3)/3" style="width:60%"/></label>
+          <label>Período: <input type="number" id="periodo" required></label>
           <div style="margin-top:8px;">
             <button type="submit">Salvar</button>
             <button type="button" id="limparBtn">Limpar</button>
@@ -35,7 +35,7 @@
       </section>
     </div>
 
-    <script src="/scripts/disciplinas.js"></script>
+    <script src="./scripts/disciplinas.js"></script>
   </body>
 </html>
 <!doctype html>

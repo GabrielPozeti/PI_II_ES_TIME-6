@@ -50,7 +50,8 @@
         });
         const body = await res.json();
         if (!res.ok) throw new Error(body.message || 'Erro');
-        // Redirect to login
+        localStorage.setItem('user', JSON.stringify(body.user || {}));
+
         window.location.href = 'register2.html';
       } catch (err) {
         errorEl.textContent = err.message || 'Erro no cadastro';

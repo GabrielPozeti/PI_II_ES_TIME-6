@@ -21,20 +21,37 @@
       <button id="logout" class="btn" style="margin-top:0.6rem;background:#6b7280">Sair</button>
     </div>
   </div>
-  <script>
+  <script type="module">
     const msg = document.getElementById('msg');
-    await fetch('http://localhost:3000/auth/me', { credentials: 'same-origin', method: 'GET' })
+    const userId = JSON.parse(localStorage.getItem('user') || '{}').id;
+    console.log("userId:", userId);
+    
+    await fetch('http://localhost:3000/auth/me', 
+    { 
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }, 
+      method: 'POST', 
+      body: JSON.stringify({ userId: userId }) 
+  })
       .then(r => {
-        console.log(r);
-        if (!r.ok) { window.location.href = 'login.html'; return null; }
+        console.log(r.status);
+        if (r.status !== 200) {   
+         
+          return;
+         }
         return r.json();
       })
-      .then(b => { if (b) msg.textContent = 'Bem-vindo(a), ' + (b.nome || 'usuário'); })
-      .catch((e) => {console.log(e); window.location.href = 'login.html'; });
+      .then(b => { if (b) msg.textContent = 'Bem-vindo(a), ' + (b.user.nome || 'usuário'); })
+      .catch((e) => {
+        console.error(e);
+      });
 
     document.getElementById('logout').addEventListener('click', async () => {
       try {
-        await fetch('/auth/logout', { method: 'POST', credentials: 'same-origin' });
+        console.log("cliquei no logout");
+        localStorage.removeItem('user');
+        
+        await fetch('http://localhost:3000/auth/logout', { method: 'POST', credentials: 'same-origin' });
       } finally {
         window.location.href = 'login.html';
       }

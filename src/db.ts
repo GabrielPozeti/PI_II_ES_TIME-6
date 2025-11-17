@@ -1,11 +1,11 @@
-import fs from 'fs';
-import sqlite3 from 'sqlite3';
-import { open, Database } from 'sqlite';
-import path from 'path';
+import fs from "fs";
+import sqlite3 from "sqlite3";
+import { open, Database } from "sqlite";
+import path from "path";
 
-const dataDir = path.resolve(__dirname, '..', 'data');
+const dataDir = path.resolve(__dirname, "..", "data");
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-const dbFile = path.resolve(dataDir, 'docentes.sqlite');
+const dbFile = path.resolve(dataDir, "docentes.sqlite");
 
 let _db: Database<sqlite3.Database, sqlite3.Statement> | null = null;
 
@@ -20,8 +20,11 @@ export async function getDb() {
       email TEXT NOT NULL UNIQUE,
       telefone TEXT,
       senha_hash TEXT NOT NULL,
+      curso TEXT,
+      id_instituicao INTEGER,
       criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
-      atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+      atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (id_instituicao) REFERENCES instituicoes(id)
     );
     CREATE TABLE IF NOT EXISTS instituicoes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,8 +37,8 @@ export async function getDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL,
       codigo TEXT,
+      periodo INTEGER,
       instituicao_id INTEGER NOT NULL,
-      formula TEXT,
       criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
       atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(instituicao_id) REFERENCES instituicoes(id) ON DELETE RESTRICT
@@ -116,41 +119,102 @@ export type Docente = {
   senha_hash: string;
   criado_em: string;
   atualizado_em: string;
+  curso?: string | null;
+  id_instituicao?: number | null;
 };
 
 export async function findByEmail(email: string): Promise<Docente | undefined> {
   const db = await getDb();
-  const row = await db.get<Docente>('SELECT * FROM docentes WHERE lower(email)=lower(?)', email);
+  const row = await db.get<Docente>(
+    "SELECT * FROM docentes WHERE lower(email)=lower(?)",
+    email
+  );
   return row || undefined;
 }
 
 export async function findById(id: number): Promise<Docente | undefined> {
   const db = await getDb();
-  const row = await db.get<Docente>('SELECT * FROM docentes WHERE id = ?', id);
+  const row = await db.get<Docente>("SELECT * FROM docentes WHERE id = ?", id);
   return row || undefined;
 }
 
-export async function createDocente(data: { nome: string; email: string; telefone?: string | null; senha_hash: string }): Promise<Docente> {
+export async function createDocente(data: {
+  nome: string;
+  email: string;
+  telefone?: string | null;
+  senha_hash: string;
+}): Promise<Docente> {
   const db = await getDb();
   const now = new Date().toISOString();
   const result = await db.run(
-    'INSERT INTO docentes (nome, email, telefone, senha_hash, criado_em, atualizado_em) VALUES (?, ?, ?, ?, ?, ?)',
-    data.nome, data.email, data.telefone || null, data.senha_hash, now, now
+    "INSERT INTO docentes (nome, email, telefone, senha_hash, criado_em, atualizado_em, curso, id_instituicao) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    data.nome,
+    data.email,
+    data.telefone || null,
+    data.senha_hash,
+    now,
+    now,
+    null,
+    null
   );
   const id = result.lastID as number;
   const row = await findById(id);
-  if (!row) throw new Error('Failed to create docente');
+  if (!row) throw new Error("Failed to create docente");
   return row;
 }
 
-export async function updateDocente(id: number, patch: Partial<Docente>): Promise<Docente | undefined> {
+export async function updateDocente(
+  id: number,
+  patch: Partial<Docente>
+): Promise<Docente | undefined> {
   const db = await getDb();
   const existing = await findById(id);
   if (!existing) return undefined;
-  const updated = { ...existing, ...patch, atualizado_em: new Date().toISOString() } as Docente;
-  await db.run('UPDATE docentes SET nome = ?, email = ?, telefone = ?, senha_hash = ?, atualizado_em = ? WHERE id = ?',
-    updated.nome, updated.email, updated.telefone, updated.senha_hash, updated.atualizado_em, id);
+  const updated = {
+    ...existing,
+    ...patch,
+    atualizado_em: new Date().toISOString(),
+  } as Docente;
+  await db.run(
+    "UPDATE docentes SET nome = ?, email = ?, telefone = ?, senha_hash = ?, atualizado_em = ?, curso = ?, id_instituicao = ? WHERE id = ?",
+    updated.nome,
+    updated.email,
+    updated.telefone,
+    updated.senha_hash,
+    updated.atualizado_em,
+    updated.curso,
+    updated.id_instituicao,
+    id
+  );
   return await findById(id);
 }
 
+export async function findInstituicaoByNome(
+  nome: string
+): Promise<any | undefined> {
+  const db = await getDb();
+  const row = await db.get<any>(
+    "SELECT * FROM instituicoes WHERE lower(nome)=lower(?)",
+    nome
+  );
+  return row || undefined;
+}
 
+export async function createInstituicao(data: {
+  nome: string;
+  sigla?: string;
+}): Promise<any> {
+  const db = await getDb();
+  const now = new Date().toISOString();
+  const result = await db.run(
+    "INSERT INTO instituicoes (nome, sigla, criado_em, atualizado_em) VALUES (?, ?, ?, ?)",
+    data.nome,
+    data.sigla || null,
+    now,
+    now
+  );
+  const id = result.lastID as number;
+  const row = await db.get<any>("SELECT * FROM instituicoes WHERE id = ?", id);
+  if (!row) throw new Error("Failed to create instituicao");
+  return row;
+}

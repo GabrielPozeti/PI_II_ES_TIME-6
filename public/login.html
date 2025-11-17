@@ -38,9 +38,12 @@
         const res = await fetch('http://localhost:3000/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ email, senha })
         });
+
         const body = await res.json();
+        localStorage.setItem('user', JSON.stringify(body.user || {}));
         if (!res.ok) throw new Error(body.message || 'Erro');
         // Session created on server side; redirect to dashboard
         window.location.href = 'dashboard.html';
