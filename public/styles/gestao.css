@@ -1,5 +1,4 @@
-/* Gestao styles adaptados para a paleta de cores do projeto (ver `base.css`) */
-/* Resets específicos para quando a página usa `login.css` (evita centralização vertical que oculta o topo) */
+
 body.gestao-page{height:auto !important;display:block !important;align-items:initial !important;justify-content:initial !important;background:var(--bg-page) !important;margin:0;padding:20px}
 body{font-family:"Poppins", Arial, Helvetica, sans-serif;background:var(--bg-page);color:#222;margin:0;padding:20px}
 .container{max-width:1200px;margin:0 auto}
@@ -7,7 +6,7 @@ h1{text-align:center;margin-bottom:20px}
 .columns{display:flex;gap:16px;flex-wrap:wrap}
 .col{background:var(--white);border:1px solid rgba(214,51,108,0.08);border-radius:6px;padding:16px;flex:1;min-width:300px}
 form{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}
-/* inputs dentro dos formulários da página de gestão ficam maiores e ocupam linha inteira */
+
 form input, form select{padding:10px;border:1px solid rgba(214,51,108,0.18);border-radius:6px;flex:1 1 100%;font-size:15px;min-height:40px}
 button{padding:8px 12px;border:none;border-radius:6px;background:var(--pink);color:var(--white);cursor:pointer}
 button:hover{background:var(--pink-dark)}
@@ -20,7 +19,6 @@ li{padding:8px;border-bottom:1px solid rgba(214,51,108,0.04);display:flex;justif
 .modal-content{background:var(--white);padding:20px;border-radius:8px;max-width:400px;width:90%}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
 
-/* Pequenas melhorias de acessibilidade */
 input:focus, select:focus{border-color:var(--input-focus);box-shadow:0 0 6px rgba(166,30,77,0.12)}
 button:focus{box-shadow:0 0 6px rgba(166,30,77,0.12)}
 
