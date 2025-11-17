@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { findByEmail, createDocente, findById, updateDocente } from '../db';
 import fs from 'fs';
 import path from 'path';
+import { sendEmail } from '../utils/email';
 
 const router = express.Router();
 
@@ -59,6 +60,7 @@ router.post('/forgot-password', async (req, res) => {
   fs.appendFileSync(path.join(dataDir, 'mock_emails.txt'), out);
   console.log('Mock email sent:\n', out);
 
+  await sendEmail(email, row.nome, resetLink);
   return res.json({ message: 'Se o e-mail existir, você receberá instruções' });
 });
 
