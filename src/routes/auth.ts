@@ -53,8 +53,6 @@ router.post("/login", async (req, res) => {
   const match = bcrypt.compareSync(senha, row.senha_hash);
   if (!match) return res.status(401).json({ message: "Credenciais inválidas" });
 
-  ((req as any).session as any).userId = row.id;
-
   return res.json({
     message: "Logado",
     user: {
