@@ -1,3 +1,9 @@
+/*
+  Arquivo: src/index.ts
+  Finalidade: Ponto de entrada do servidor Express. Configura middlewares,
+  rotas (auth, instituicoes, disciplinas, turmas, componentes, notas, auditoria, alunos)
+  e serve os arquivos estáticos em `public`.
+*/
 import express from "express";
 import dotenv from "dotenv";
 import path from "path";

@@ -1,8 +1,14 @@
+/*
+  Arquivo: src/utils/email.ts
+  Finalidade: Utilitário para envio de emails (recuperação de senha, notificações).
+  Observações: Usa `@emailjs/nodejs`. As chaves e IDs de serviço estão configuradas diretamente aqui —
+  recomenda-se mover para variáveis de ambiente em produção.
+*/
 import emailjs from "@emailjs/nodejs";
 
 emailjs.init({
-    publicKey: "l-6Jdvr7JW6YUc2wS",
-    privateKey: "pGhq6V_3I57mK93b6QxEV"
+    publicKey: process.env.EMAILJS_PUBLIC || "l-6Jdvr7JW6YUc2wS",
+    privateKey: process.env.EMAILJS_PRIVATE || "pGhq6V_3I57mK93b6QxEV"
 })
 
 export async function sendEmail(userEmail: string, userNome: string, recoveryLink: string) {
@@ -12,7 +18,7 @@ export async function sendEmail(userEmail: string, userNome: string, recoveryLin
         recovery_link: recoveryLink
     }
     try {
-        const response = await emailjs.send("service_j27htef","template_6f8wp0i", template);
+        const response = await emailjs.send(process.env.EMAILJS_SERVICE || "service_j27htef", process.env.EMAILJS_TEMPLATE || "template_6f8wp0i", template);
         console.log("Email enviado com sucesso:", response.status, response.text);
     } catch (error) {
         console.log("Erro ao enviar email:", error);

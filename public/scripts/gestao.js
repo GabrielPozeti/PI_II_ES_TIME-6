@@ -1,4 +1,11 @@
 
+/*
+  Arquivo: gestao.js
+  Finalidade: Lógica de frontend para a página de gestão (`gestao.html`).
+  Observações: Fornece funções de request, carregamento de listas (instituições,
+  disciplinas, turmas, alunos), CRUD via API e controles de modal/confirm.
+*/
+
 // verify session with server; redirect to login if not authenticated
 await fetch('/protected', { credentials: 'same-origin' })
   .then(r => { if (!r.ok) window.location.href = '/login.html'; })

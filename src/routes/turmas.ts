@@ -1,3 +1,8 @@
+/*
+  Arquivo: src/routes/turmas.ts
+  Finalidade: Rotas para gerenciar turmas, import/export de alunos e geração de CSV.
+  Observações: Valida existência de disciplinas, importa CSV/JSON e calcula `nota_final` quando necessário.
+*/
 import express from 'express';
 import { getDb } from '../db';
 import { computeNotaFinalForAluno } from '../utils/grades';

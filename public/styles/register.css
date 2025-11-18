@@ -1,3 +1,8 @@
+/*
+  Arquivo: register.css
+  Finalidade: Estilos para as telas de registro (`register.html`, `register2.html`).
+  Observações: Define o layout do formulário de cadastro e estados de validação.
+*/
 body.register-page {
   height: 100vh;
   display: flex;

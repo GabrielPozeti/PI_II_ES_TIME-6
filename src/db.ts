@@ -1,3 +1,9 @@
+/*
+  Arquivo: src/db.ts
+  Finalidade: Inicialização e abstração do acesso ao banco de dados (PostgreSQL).
+  Observações: Cria schema/tabelas quando necessário, expõe `getPool()` e funções CRUD
+  para entidades como `docentes` e `instituicoes`.
+*/
 import dotenv from "dotenv";
 import { Pool } from "pg";
 

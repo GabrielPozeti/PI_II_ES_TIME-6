@@ -1,3 +1,9 @@
+/*
+  Arquivo: src/routes/componentes.ts
+  Finalidade: Rotas para gerenciar componentes de avaliação e suas notas.
+  Observações: Suporta listagem, CRUD, matriz de componentes por disciplina e atualização de notas.
+  Ao salvar notas, recalcula a `nota_final` do aluno usando util `computeNotaFinalForAluno`.
+*/
 import express from 'express';
 import { getDb } from '../db';
 import { computeNotaFinalForAluno } from '../utils/grades';

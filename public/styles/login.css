@@ -1,3 +1,9 @@
+/*
+  Arquivo: login.css
+  Finalidade: Estilos para a tela de autenticação (`login.html`).
+  Observações: Define layout centralizado do formulário de login e elementos visuais.
+*/
+
 body {
   height: 100vh;
   display: flex;

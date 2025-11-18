@@ -1,3 +1,8 @@
+/*
+  Arquivo: perfil.css
+  Finalidade: Estilos para a página de perfil do usuário (`perfil.html`).
+  Observações: Layout de cartão de perfil e campos editáveis.
+*/
 body.perfil-page {
   height: auto !important;
   display: block !important;

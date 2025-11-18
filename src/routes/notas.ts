@@ -1,3 +1,8 @@
+/*
+  Arquivo: src/routes/notas.ts
+  Finalidade: Endpoints para manipulação de notas (consulta por componente e atualização em lote).
+  Observações: Realiza transações para atualizações em lote e invoca `computeNotaFinalForAluno`.
+*/
 import express from 'express';
 import { getDb } from '../db';
 import { computeNotaFinalForAluno } from '../utils/grades';

@@ -1,3 +1,8 @@
+/*
+  Arquivo: src/routes/auditoria.ts
+  Finalidade: Rotas para recuperar logs de auditoria de notas por turma.
+  Observações: Consulta a tabela `auditoria_notas` e junta com `alunos`, `turmas` e `componentes_nota`.
+*/
 import express from 'express';
 import { getDb } from '../db';
 

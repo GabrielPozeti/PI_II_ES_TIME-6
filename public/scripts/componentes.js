@@ -107,12 +107,19 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       li.appendChild(edit); li.appendChild(del);
       compList.appendChild(li);
-    }
-  }
 
-  function renderMatriz(alunos, componentes, notas) {
-    if (!componentes.length) {
-      matrizContainer.innerHTML = '<p>Nenhum componente cadastrado.</p>';
+    /*
+      Arquivo: componentes.js
+      Finalidade: Lógica cliente para gerenciar componentes de avaliação (ex.: criar,
+      editar, excluir componentes e salvar fórmula da disciplina). Também renderiza
+      a matriz de notas para a disciplina e permite edição de valores.
+      Observações: Comunica-se com endpoints como `/componentes` e `/disciplinas`.
+    */
+
+    // verify session with server; redirect to login if not authenticated
+    await fetch('/protected', { credentials: 'same-origin' })
+      .then(r => { if (!r.ok) window.location.href = '/login.html'; })
+      .catch(() => { window.location.href = '/login.html'; });
       return;
     }
     const table = document.createElement('table');

@@ -1,3 +1,8 @@
+/*
+  Arquivo: dashboard.css
+  Finalidade: Estilos específicos para a página `dashboard.html` (cards,
+  containers e layout do painel principal).
+*/
 body.dashboard-page {
   height: 100vh;
   display: flex;
