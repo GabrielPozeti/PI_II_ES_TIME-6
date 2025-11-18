@@ -2,6 +2,7 @@
 	Arquivo: gestao.css
 	Finalidade: Estilos para a página de gestão administrativa (`gestao.html`).
 	Observações: Regras para colunas, modais e formulários usados na interface de gestão.
+	Feito por: Lara Brondi Fraccaroli
 */
 
 body.gestao-page{height:auto !important;display:block !important;align-items:initial !important;justify-content:initial !important;background:var(--bg-page) !important;margin:0;padding:20px}

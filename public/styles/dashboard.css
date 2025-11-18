@@ -2,6 +2,7 @@
   Arquivo: dashboard.css
   Finalidade: Estilos específicos para a página `dashboard.html` (cards,
   containers e layout do painel principal).
+  Feito por: Gabriel Henrique Pozeti de Faria
 */
 body.dashboard-page {
   height: 100vh;

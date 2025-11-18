@@ -3,6 +3,7 @@
   Finalidade: Ponto de entrada do servidor Express. Configura middlewares,
   rotas (auth, instituicoes, disciplinas, turmas, componentes, notas, auditoria, alunos)
   e serve os arquivos estáticos em `public`.
+  Feito por: Maria Eduarda Perez Mostaro Campos
 */
 import express from "express";
 import dotenv from "dotenv";

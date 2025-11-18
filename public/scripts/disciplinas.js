@@ -3,6 +3,7 @@
   Finalidade: Lógica de frontend para `disciplinas.html`: verificação de sessão,
   chamadas ao backend para CRUD de disciplinas e manipulação do DOM.
   Observações: Usa fetch para se comunicar com API local em `localhost:3000`.
+  Feito por: Ana Beatriz da Silva
 */
 // verify session
 fetch("http://localhost:3000/protected", { credentials: "include" })

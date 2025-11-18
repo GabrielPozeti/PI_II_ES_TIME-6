@@ -2,6 +2,7 @@
   Arquivo: notas.css
   Finalidade: Estilos para as páginas de notas (`notas.html`) — tabelas, formulários e cartões.
   Observações: Regras para exibição de listas de notas e inputs de lançamento.
+  Feito por: Gabriel Henrique Pozeti de Faria
 */
 body.notas-page {
   height: auto !important;

@@ -4,6 +4,7 @@
   Finalidade: Lógica de frontend para a página de gestão (`gestao.html`).
   Observações: Fornece funções de request, carregamento de listas (instituições,
   disciplinas, turmas, alunos), CRUD via API e controles de modal/confirm.
+  Feito por: Maria Eduarda Perez Mostaro Campos
 */
 
 // verify session with server; redirect to login if not authenticated

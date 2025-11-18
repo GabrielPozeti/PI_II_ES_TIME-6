@@ -2,6 +2,7 @@
   Arquivo: instituicoes.js
   Finalidade: Código cliente para `instituicoes.html` — carregamento e CRUD de instituições.
   Observações: Usa `fetch` para comunicar-se com a API e manipula o DOM (lista e formulário).
+  Feito por: Gabriel Henrique Pozeti de Faria
 */
 fetch('/protected', { credentials: 'same-origin' }).then(r => { if (!r.ok) window.location.href = '/login.html'; }).catch(()=>{ window.location.href = '/login.html'; });
 

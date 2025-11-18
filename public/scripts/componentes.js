@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
       editar, excluir componentes e salvar fórmula da disciplina). Também renderiza
       a matriz de notas para a disciplina e permite edição de valores.
       Observações: Comunica-se com endpoints como `/componentes` e `/disciplinas`.
+      Feito por: Ana Beatriz da Silva
     */
 
     // verify session with server; redirect to login if not authenticated

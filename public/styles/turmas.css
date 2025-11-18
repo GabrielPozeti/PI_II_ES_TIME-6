@@ -3,6 +3,7 @@
   Finalidade: Estilos para a página de turmas (`turmas.html`) incluindo lista,
   filtros e botões de exportação.
   Observações: Define layout de seções e tabelas relacionadas às turmas.
+  Feito por: Marina Hehnes Espósito
 */
 body.turmas-page {
   height: auto !important;
