@@ -1,3 +1,9 @@
+/*
+  Arquivo: turmas.css
+  Finalidade: Estilos para a página de turmas (`turmas.html`) incluindo lista,
+  filtros e botões de exportação.
+  Observações: Define layout de seções e tabelas relacionadas às turmas.
+*/
 body.turmas-page {
   height: auto !important;
   display: block !important;

@@ -1,3 +1,8 @@
+/*
+  Arquivo: src/routes/disciplinas.ts
+  Finalidade: Rotas CRUD para disciplinas e validação da fórmula usada para cálculo de nota.
+  Observações: Verifica integridade com `instituicoes` e assegura que componentes tenham siglas quando fórmula é salva.
+*/
 import express from "express";
 import { getDb } from "../db";
 

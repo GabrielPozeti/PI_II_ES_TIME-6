@@ -1,3 +1,9 @@
+/*
+  Arquivo: src/routes/auth.ts
+  Finalidade: Rotas de autenticação e gerenciamento de conta (registro, login,
+  recuperação de senha, logout e informações do usuário).
+  Observações: Usa utilitários de `db` e `utils/email` e opera sobre tokens de reset.
+*/
 import express from "express";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";

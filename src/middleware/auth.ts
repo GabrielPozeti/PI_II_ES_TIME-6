@@ -1,3 +1,8 @@
+/*
+  Arquivo: src/middleware/auth.ts
+  Finalidade: Middleware de autenticação para rotas protegidas. Verifica sessão
+  e adiciona `userId` ao objeto `req` quando autenticado.
+*/
 import { Request, Response, NextFunction } from "express";
 
 export interface AuthRequest extends Request {

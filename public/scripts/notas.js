@@ -1,3 +1,8 @@
+/*
+  Arquivo: notas.js
+  Finalidade: Interface cliente para visualizar e lançar notas por turma.
+  Observações: Carrega matriz de componentes/alunos e permite edição de notas via API.
+*/
 fetch('/protected', { credentials: 'same-origin' }).then(r => { if (!r.ok) window.location.href = '/login.html'; }).catch(()=>{ window.location.href = '/login.html'; });
 
 async function fetchJson(url, opts) {

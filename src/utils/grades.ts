@@ -1,3 +1,8 @@
+/*
+  Arquivo: src/utils/grades.ts
+  Finalidade: Utilitários para cálculo de nota final de alunos.
+  Observações: Suporta cálculo por fórmula definida na disciplina ou média ponderada por pesos.
+*/
 import { Database } from 'sqlite';
 
 export async function computeNotaFinalForAluno(db: any, alunoId: number, disciplinaId: number): Promise<void> {

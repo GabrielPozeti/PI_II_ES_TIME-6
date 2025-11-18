@@ -1,3 +1,8 @@
+/*
+  Arquivo: src/routes/alunos.ts
+  Finalidade: Rotas para gerenciar alunos (listagem, criação, atualização, exclusão).
+  Observações: Opera sobre a tabela `alunos` e valida relacionamentos com `turmas`.
+*/
 import express from 'express';
 import { getDb } from '../db';
 

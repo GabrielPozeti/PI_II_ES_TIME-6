@@ -1,3 +1,8 @@
+/*
+  Arquivo: auditoria.css
+  Finalidade: Estilos para a página de auditoria (`auditoria.html`) — tabelas e logs.
+  Observações: Formatação de tabelas usadas para exibir histórico de alterações.
+*/
 body.auditoria-page {
   height: auto !important;
   display: block !important;

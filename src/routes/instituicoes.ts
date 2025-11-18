@@ -1,3 +1,8 @@
+/*
+  Arquivo: src/routes/instituicoes.ts
+  Finalidade: Rotas CRUD para instituições (listar, criar, atualizar, excluir).
+  Observações: Valida relações com disciplinas ao excluir.
+*/
 import express from 'express';
 import { getDb } from '../db';
 

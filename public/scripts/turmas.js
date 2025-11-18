@@ -1,3 +1,8 @@
+/*
+  Arquivo: turmas.js
+  Finalidade: Lógica cliente para a página de turmas (`turmas.html`) — CRUD, importação/exportação e navegação para quadro de notas.
+  Observações: Usa `fetch` com credenciais e manipula arquivos CSV/JSON para importação.
+*/
 fetch('/protected', { credentials: 'same-origin' }).then(r => { if (!r.ok) window.location.href = '/login.html'; }).catch(()=>{ window.location.href = '/login.html'; });
 
 async function fetchJson(url, opts) {
