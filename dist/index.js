@@ -19,30 +19,44 @@ const auditoria_1 = __importDefault(require("./routes/auditoria"));
 const alunos_1 = __importDefault(require("./routes/alunos"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-app.use((0, cors_1.default)());
+const FRONTEND = "http://127.0.0.1:5500";
+app.use((0, cors_1.default)({
+    origin: FRONTEND,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+}));
+app.options("*", (0, cors_1.default)({
+    origin: FRONTEND,
+    credentials: true,
+}));
 app.use(express_1.default.json());
-const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-session-secret';
+const SESSION_SECRET = process.env.SESSION_SECRET || "dev-session-secret";
 app.use((0, express_session_1.default)({
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: {
+        httpOnly: true,
+        secure: false,
+        sameSite: "none",
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+    },
 }));
 // Redireciona a raiz para a página de login
-app.get('/', (req, res) => {
-    res.redirect('/login.html');
+app.get("/", (req, res) => {
+    res.redirect("/login.html");
 });
-app.use('/', express_1.default.static(path_1.default.join(__dirname, '..', 'public')));
-app.use('/auth', auth_1.default);
-app.use('/instituicoes', auth_2.verifyToken, instituicoes_1.default);
-app.use('/disciplinas', auth_2.verifyToken, disciplinas_1.default);
-app.use('/turmas', auth_2.verifyToken, turmas_1.default);
-app.use('/componentes', auth_2.verifyToken, componentes_1.default);
-app.use('/notas', auth_2.verifyToken, notas_1.default);
-app.use('/auditoria', auth_2.verifyToken, auditoria_1.default);
-app.use('/alunos', auth_2.verifyToken, alunos_1.default);
-app.get('/protected', auth_2.verifyToken, (req, res) => {
-    res.json({ message: 'Acesso autorizado ao recurso protegido' });
+app.use("/", express_1.default.static(path_1.default.join(__dirname, "..", "public")));
+app.use("/auth", auth_1.default);
+app.use("/instituicoes", auth_2.verifyToken, instituicoes_1.default);
+app.use("/disciplinas", auth_2.verifyToken, disciplinas_1.default);
+app.use("/turmas", auth_2.verifyToken, turmas_1.default);
+app.use("/componentes", auth_2.verifyToken, componentes_1.default);
+app.use("/notas", auth_2.verifyToken, notas_1.default);
+app.use("/auditoria", auth_2.verifyToken, auditoria_1.default);
+app.use("/alunos", auth_2.verifyToken, alunos_1.default);
+app.get("/protected", auth_2.verifyToken, (req, res) => {
+    res.json({ message: "Acesso autorizado ao recurso protegido" });
 });
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 app.listen(port, () => {
