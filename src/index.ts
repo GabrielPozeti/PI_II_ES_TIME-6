@@ -6,81 +6,48 @@
 */
 import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+
 import path from "path";
 import cors from "cors";
-import authRoutes from "./routes/auth";
-import { verifyToken } from "./middleware/auth";
 import session from "express-session";
-import instituicoesRoutes from "./routes/instituicoes";
-import disciplinasRoutes from "./routes/disciplinas";
-import turmasRoutes from "./routes/turmas";
-import componentesRoutes from "./routes/componentes";
-import notasRoutes from "./routes/notas";
-import auditoriaRoutes from "./routes/auditoria";
-import alunosRoutes from "./routes/alunos";
-
-dotenv.config();
+import authRoutes from "./routes/auth";
+import testeRouter from "./routes/test";
+import { initSchema } from "./db";
+import { verifyToken } from "./middleware/auth";
 
 const app = express();
 const FRONTEND = "http://127.0.0.1:5500";
 
-app.use(
-  cors({
-    origin: FRONTEND,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  })
-);
-
-app.options(
-  "*",
-  cors({
-    origin: FRONTEND,
-    credentials: true,
-  })
-);
-
+app.use(cors({ origin: FRONTEND, credentials: true }));
+app.options("*", cors({ origin: FRONTEND, credentials: true }));
 app.use(express.json());
 
 const SESSION_SECRET = process.env.SESSION_SECRET || "dev-session-secret";
-
 app.use(
   session({
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-
-    cookie: {
-      httpOnly: true,
-      secure: false,
-      sameSite: "none",
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    },
+    cookie: { httpOnly: true, secure: false, sameSite: "none", maxAge: 1000 * 60 * 60 * 24 * 7 },
   })
 );
 
-// Redireciona a raiz para a página de login
-app.get("/", (req, res) => {
-  res.redirect("/login.html");
-});
-
 app.use("/", express.static(path.join(__dirname, "..", "public")));
-
 app.use("/auth", authRoutes);
-
-app.use("/instituicoes", verifyToken, instituicoesRoutes);
-app.use("/disciplinas", verifyToken, disciplinasRoutes);
-app.use("/turmas", verifyToken, turmasRoutes);
-app.use("/componentes", verifyToken, componentesRoutes);
-app.use("/notas", verifyToken, notasRoutes);
-app.use("/auditoria", verifyToken, auditoriaRoutes);
-app.use("/alunos", verifyToken, alunosRoutes);
+app.use(testeRouter);
 
 app.get("/protected", verifyToken, (req, res) => {
   res.json({ message: "Acesso autorizado ao recurso protegido" });
 });
 
-const port = process.env.PORT ? Number(process.env.PORT) : 3000;
-app.listen(port, () => {
-  console.log(`Server listening on http://localhost:${port}`);
-});
+const port = Number(process.env.PORT) || 3000;
+
+initSchema()
+  .then(() => {
+    console.log("Banco inicializado com sucesso!");
+    app.listen(port, () => console.log(`Server listening on http://localhost:${port}`));
+  })
+  .catch((err) => {
+    console.error("❌ Erro ao iniciar servidor:", err);
+  });

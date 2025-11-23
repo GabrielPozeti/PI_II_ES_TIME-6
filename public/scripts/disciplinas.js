@@ -5,25 +5,25 @@
   Observações: Usa fetch para se comunicar com API local em `localhost:3000`.
 */
 // verify session
-fetch("http://localhost:3000/protected", { credentials: "include" })
-  .then((r) => {
-    if (!r.ok) window.location.href = "login.html";
-  })
-  .catch(() => {
-    window.location.href = "login.html";
-  });
+// fetch("http://localhost:3000/protected", { credentials: "include" })
+//   .then((r) => {
+//     if (!r.ok) window.location.href = "login.html";
+//   })
+//   .catch(() => {
+//     window.location.href = "login.html";
+//   });
 
-async function fetchJson(url, opts) {
-  const finalOpts = Object.assign({}, opts || {});
-  finalOpts.headers = Object.assign({}, finalOpts.headers || {});
-  finalOpts.credentials = "include";
-  const r = await fetch(url, finalOpts);
-  if (!r.ok) {
-    const t = await r.json().catch(() => ({ message: "Erro" }));
-    throw new Error(t.message || "Erro na requisição");
-  }
-  return r.json();
-}
+// async function fetch(url, opts) {
+//   const finalOpts = Object.assign({}, opts || {});
+//   finalOpts.headers = Object.assign({}, finalOpts.headers || {});
+//   finalOpts.credentials = "include";
+//   const r = await fetch(url, finalOpts);
+//   if (!r.ok) {
+//     const t = await r.json().catch(() => ({ message: "Erro" }));
+//     throw new Error(t.message || "Erro na requisição");
+//   }
+//   return r.json();
+// }
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("discForm");
@@ -47,13 +47,13 @@ document.addEventListener("DOMContentLoaded", () => {
       return alert("Nome e Instituição são obrigatórios");
     try {
       if (id) {
-        await fetchJson("http://localhost:3000/disciplinas/" + id, {
+        await fetch("http://localhost:3000/disciplinas/" + id, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nome, codigo, instituicao_id, periodo }),
         });
       } else {
-        await fetchJson("http://localhost:3000/disciplinas", {
+        await fetch("http://localhost:3000/disciplinas", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nome, codigo, instituicao_id, periodo }),
@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadInstituicoes() {
     try {
-      const insts = await fetchJson("http://localhost:3000/instituicoes");
+      const insts = await fetch("http://localhost:3000/instituicoes");
       instituicaoSelect.innerHTML = "";
       const opt = document.createElement("option");
       opt.value = "";
@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadDisciplinas() {
     try {
-      const rows = await fetchJson("http://localhost:3000/disciplinas");
+      const rows = await fetch("http://localhost:3000/disciplinas");
       lista.innerHTML = "";
       for (const r of rows) {
         const li = document.createElement("li");
@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
         edit.textContent = "Editar";
         edit.addEventListener("click", async () => {
           try {
-            const data = await fetchJson(
+            const data = await fetch(
               "http://localhost:3000/disciplinas/" + r.id
             );
             document.getElementById("discId").value = data.id;
@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         del.addEventListener("click", async () => {
           if (!confirm("Confirmar exclusão?")) return;
           try {
-            await fetchJson("http://localhost:3000/disciplinas/" + r.id, {
+            await fetch("http://localhost:3000/disciplinas/" + r.id, {
               method: "DELETE",
             });
             await loadDisciplinas();
