@@ -11,7 +11,14 @@ dotenv.config();
 import path from "path";
 import cors from "cors";
 import session from "express-session";
+import alunosRouter from "./routes/alunos";
+import auditoriaRouter from "./routes/auditoria";
 import authRoutes from "./routes/auth";
+import componentesRouter from "./routes/componentes";
+import disciplinasRouter from "./routes/disciplinas";
+import instituicoesRouter from "./routes/instituicoes";
+import notasRouter from "./routes/notas";
+import turmasRouter from "./routes/turmas";
 import testeRouter from "./routes/test";
 import { initSchema } from "./db";
 import { verifyToken } from "./middleware/auth";
@@ -29,13 +36,25 @@ app.use(
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { httpOnly: true, secure: false, sameSite: "none", maxAge: 1000 * 60 * 60 * 24 * 7 },
+    cookie: {
+      httpOnly: true,
+      secure: false,
+      sameSite: "none",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    },
   })
 );
 
 app.use("/", express.static(path.join(__dirname, "..", "public")));
 app.use("/auth", authRoutes);
+app.use("/instituicoes", instituicoesRouter);
 app.use(testeRouter);
+app.use("/disciplinas", disciplinasRouter);
+app.use("/turmas", turmasRouter);
+app.use("/componentes", componentesRouter);
+app.use("/notas", notasRouter);
+app.use("/auditoria", auditoriaRouter);
+app.use("/alunos", alunosRouter);
 
 app.get("/protected", verifyToken, (req, res) => {
   res.json({ message: "Acesso autorizado ao recurso protegido" });
@@ -46,7 +65,9 @@ const port = Number(process.env.PORT) || 3000;
 initSchema()
   .then(() => {
     console.log("Banco inicializado com sucesso!");
-    app.listen(port, () => console.log(`Server listening on http://localhost:${port}`));
+    app.listen(port, () =>
+      console.log(`Server listening on http://localhost:${port}`)
+    );
   })
   .catch((err) => {
     console.error("❌ Erro ao iniciar servidor:", err);
