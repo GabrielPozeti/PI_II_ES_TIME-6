@@ -10,10 +10,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Quadro de Notas</title>
+
     <link rel="stylesheet" href="./styles/base.css">
     <link rel="stylesheet" href="./styles/notas.css">
   </head>
-  <body class="notas-page">
+
+  <body>
     <div class="container">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;">
         <h1 style="margin:0;">Quadro de Notas</h1>
@@ -21,29 +23,15 @@
       </div>
 
       <div>
-        <label>Turma ID: <input id="turmaIdInput" type="number" /></label>
+     <h1 style="margin:0;">Quadro de Notas</h1>
+  
+        <label>Turma ID: <select id="turmaSelect"></select></label>
         <button id="loadBtn">Carregar Quadro</button>
       </div>
-
+      <button id="exportBtn" style="margin-left:8px;">Exportar</button>
       <div id="matrizContainer" style="margin-top:12px;">Carregue uma turma para visualizar o quadro de notas.</div>
     </div>
-
-    <script src="/scripts/notas.js"></script>
+    <script src="./scripts/notas.js"></script>
   </body>
 </html>
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8" />
-  <title>Notas</title>
-  <link rel="stylesheet" href="./styles/base.css">
-  <link rel="stylesheet" href="./styles/login.css">
-</head>
-<body>
-  <div class="login-container">
-    <h1>Notas</h1>
-    <p>Página de notas (placeholder).</p>
-    <a class="btn" href="dashboard.html">Voltar ao Dashboard</a>
-  </div>
-</body>
-</html>
+

@@ -5,7 +5,7 @@
   Observações: Usa fetch para se comunicar com API local em `localhost:3000`.
 */
 // verify session
-// fetch("http://localhost:3000/protected", { credentials: "include" })
+// await fetch("http://localhost:3000/protected", { credentials: "include" })
 //   .then((r) => {
 //     if (!r.ok) window.location.href = "login.html";
 //   })
@@ -70,23 +70,31 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("discId").value = "";
     document.getElementById("nome").value = "";
     document.getElementById("codigo").value = "";
-    document.getElementById("formula").value = "";
     instituicaoSelect.selectedIndex = 0;
   }
 
   async function loadInstituicoes() {
     try {
-      const insts = await fetch("http://localhost:3000/instituicoes");
+      const insts = await fetch("http://localhost:3000/instituicoes", {
+        method: "GET",
+        credentials: "include",
+      })
+        .then((r) => r.json())
+        .catch(() => []);
+
+      console.log("insts: ", insts);
       instituicaoSelect.innerHTML = "";
       const opt = document.createElement("option");
       opt.value = "";
       opt.textContent = "-- selecione --";
       instituicaoSelect.appendChild(opt);
-      for (const i of insts) {
-        const o = document.createElement("option");
-        o.value = i.id;
-        o.textContent = i.nome + (i.sigla ? " (" + i.sigla + ")" : "");
-        instituicaoSelect.appendChild(o);
+      if (insts.length > 0) {
+        for (const i of insts) {
+          const o = document.createElement("option");
+          o.value = i.id;
+          o.textContent = i.nome + (i.sigla ? " (" + i.sigla + ")" : "");
+          instituicaoSelect.appendChild(o);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -95,45 +103,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadDisciplinas() {
     try {
-      const rows = await fetch("http://localhost:3000/disciplinas");
+      const rows = await fetch("http://localhost:3000/disciplinas", {
+        method: "GET",
+        credentials: "include",
+      })
+        .then((r) => r.json())
+        .catch(() => []);
       lista.innerHTML = "";
-      for (const r of rows) {
-        const li = document.createElement("li");
-        li.textContent = `${r.nome} ${r.codigo ? "(" + r.codigo + ")" : ""}`;
-        const edit = document.createElement("button");
-        edit.textContent = "Editar";
-        edit.addEventListener("click", async () => {
-          try {
-            const data = await fetch(
-              "http://localhost:3000/disciplinas/" + r.id
-            );
-            document.getElementById("discId").value = data.id;
-            document.getElementById("nome").value = data.nome;
-            document.getElementById("codigo").value = data.codigo || "";
-            document.getElementById("formula").value = data.formula || "";
-            instituicaoSelect.value = data.instituicao_id;
-          } catch (err) {
-            alert(err.message);
-          }
-        });
-        const del = document.createElement("button");
-        del.textContent = "Excluir";
-        del.addEventListener("click", async () => {
-          if (!confirm("Confirmar exclusão?")) return;
-          try {
-            await fetch("http://localhost:3000/disciplinas/" + r.id, {
-              method: "DELETE",
-            });
-            await loadDisciplinas();
-          } catch (err) {
-            console.log("err: ", err);
+      if (rows.length > 0) {
+        for (const r of rows) {
+          const li = document.createElement("li");
+          li.textContent = `${r.nome} (Código: ${
+            r.codigo || "N/A"
+          }, Instituição: ${r.instituicao_nome || "N/A"}, Período: ${
+            r.periodo + "º semestre" || "N/A"
+          }) `;
 
-            alert(err.message);
-          }
-        });
-        li.appendChild(edit);
-        li.appendChild(del);
-        lista.appendChild(li);
+          const del = document.createElement("button");
+          del.textContent = "Excluir";
+          del.addEventListener("click", async () => {
+            if (!confirm("Confirmar exclusão?")) return;
+            try {
+              await fetch("http://localhost:3000/disciplinas/" + r.id, {
+                method: "DELETE",
+              });
+              await loadDisciplinas();
+            } catch (err) {
+              console.log("err: ", err);
+
+              alert(err.message);
+            }
+          });
+
+          li.appendChild(del);
+          lista.appendChild(li);
+        }
       }
     } catch (err) {
       alert(err.message);
