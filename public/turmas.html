@@ -25,7 +25,7 @@
           <input type="hidden" id="turmaId" />
           <label>Disciplina: <select id="disciplinaIdSelect"></select></label>
           <label>Código: <input id="codigo" /></label>
-          <label>Período: <input id="periodo" /></label>
+          <label>Período: <input id="periodo" type="number" /></label>
           <div style="margin-top:8px;"><button type="submit">Salvar</button> <button type="button" id="limparBtn">Limpar</button></div>
         </form>
       </section>
@@ -37,7 +37,7 @@
 
       <section style="margin-top:18px;">
         <h2>Importar Alunos</h2>
-        <label>Turma código: <input id="importTurmaId" type="number" /></label>
+        <label>Turma código: <select id="turmaSelect"></select></label>
         <div>
           <h3>CSV (upload de arquivo)</h3>
           <input id="csvFile" type="file" accept=".csv,text/csv" />
@@ -46,7 +46,7 @@
       </section>
     </div>
 
-    <script src="/scripts/turmas.js"></script>
+    <script src="./scripts/turmas.js"></script>
   </body>
 </html>
 <!doctype html>

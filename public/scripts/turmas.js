@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       clearForm();
       await loadTurmas();
+      await loadTurmasSelect();
     } catch (err) {
       alert(err.message);
     }
@@ -103,47 +104,48 @@ document.addEventListener("DOMContentLoaded", () => {
       for (const r of rows) {
         const li = document.createElement("li");
         li.textContent = `Disciplina ${r.disciplina_nome} - ${r.codigo || ""} ${
-          r.periodo ? "(" + r.periodo + ")" : ""
+          r.periodo ? "(" + r.periodo + "º semestre)" : ""
         }`;
-        const editar = document.createElement("button");
-        editar.textContent = "Editar";
-        editar.addEventListener("click", async () => {
-          const d = await fetch("http://localhost:3000/turmas/" + r.id);
-          document.getElementById("turmaId").value = d.id;
-          disciplinaSelect.value = d.disciplina_id;
-          document.getElementById("codigo").value = d.codigo || "";
-          document.getElementById("periodo").value = d.periodo || "";
-        });
+
         const del = document.createElement("button");
         del.textContent = "Excluir";
         del.addEventListener("click", async () => {
-          if (!confirm("Confirmar exclusão?")) return;
+          if (
+            !confirm(
+              "Deseja solicitar exclusão desta turma?\nUm e-mail será enviado para confirmação."
+            )
+          )
+            return;
+
           try {
-            await fetch("http://localhost:3000/turmas/" + r.id, {
-              method: "DELETE",
-            });
-            await loadTurmas();
+            const resp = await fetch(
+              `http://localhost:3000/turmas/solicitar-exclusao`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                  email: JSON.parse(localStorage.getItem("user")).email,
+                  id: r.id,
+                }), //pega o email do usuario logado do localStorage
+              }
+            ).then((r) => r.json());
+
+            alert("E-mail enviado! Confirme pelo link recebido.");
           } catch (e) {
             alert(e.message);
           }
         });
+
         const notasBtn = document.createElement("button");
         notasBtn.textContent = "Quadro de Notas";
         notasBtn.addEventListener("click", () => {
           location.href = "notas.html?turmaId=" + r.id;
         });
-        const exportBtn = document.createElement("button");
-        exportBtn.textContent = "Exportar CSV";
-        exportBtn.addEventListener("click", () => {
-          window.open(
-            "http://localhost:3000/turmas/" + r.id + "/exportar",
-            "_blank"
-          );
-        });
-        li.appendChild(editar);
+
         li.appendChild(del);
         li.appendChild(notasBtn);
-        li.appendChild(exportBtn);
+
         lista.appendChild(li);
       }
     } catch (e) {
@@ -155,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("importCsvBtn")
     .addEventListener("click", async () => {
-      const id = Number(document.getElementById("importTurmaId").value);
+      const id = Number(document.getElementById("turmaSelect").value);
       if (!id) return alert("Informe Turma ID para importar");
       const fileInput = document.getElementById("csvFile");
       if (!fileInput || !fileInput.files || fileInput.files.length === 0)
@@ -185,28 +187,29 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       reader.readAsText(file, "utf-8");
     });
+  const loadTurmasSelect = async () => {
+    const turmaSelect = document.getElementById("turmaSelect");
+    turmaSelect.innerHTML = "";
+    const turmas = await fetch("http://localhost:3000/turmas", {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .catch(() => []);
+    console.log("turmas:", turmas);
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "-- selecione --";
+    turmaSelect.appendChild(opt);
+    for (const t of turmas) {
+      const o = document.createElement("option");
+      o.value = t.id;
+      o.textContent = `${t.disciplina_nome} - ${t.codigo || ""} ${
+        t.periodo ? "(" + t.periodo + "º semestre)" : ""
+      }`;
+      turmaSelect.appendChild(o);
+    }
+  };
 
-  document
-    .getElementById("importJsonBtn")
-    .addEventListener("click", async () => {
-      const id = Number(document.getElementById("importTurmaId").value);
-      if (!id) return alert("Informe Turma ID para importar");
-      const txt = document.getElementById("jsonArea").value;
-      if (!txt) return alert("Cole o JSON (array)");
-      try {
-        const data = JSON.parse(txt);
-        const r = await fetch(
-          "http://localhost:3000/turmas/" + id + "/import-json",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ data }),
-          }
-        );
-        alert(JSON.stringify(r));
-        await loadTurmas();
-      } catch (e) {
-        alert(e.message || e);
-      }
-    });
+  loadTurmasSelect();
 });

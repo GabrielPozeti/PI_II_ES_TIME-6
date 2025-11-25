@@ -74,18 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
       for (const r of rows) {
         const li = document.createElement("li");
         li.textContent = r.nome + (r.sigla ? " (" + r.sigla + ")" : "");
-        const edit = document.createElement("button");
-        edit.textContent = "Editar";
-        edit.addEventListener("click", async () => {
-          try {
-            const d = await fetch("http://localhost:3000/instituicoes/" + r.id);
-            document.getElementById("instId").value = d.id;
-            document.getElementById("nome").value = d.nome;
-            document.getElementById("sigla").value = d.sigla || "";
-          } catch (e) {
-            alert(e.message);
-          }
-        });
+
         const del = document.createElement("button");
         del.textContent = "Excluir";
         del.addEventListener("click", async () => {
@@ -99,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(e.message);
           }
         });
-        li.appendChild(edit);
+
         li.appendChild(del);
         lista.appendChild(li);
       }

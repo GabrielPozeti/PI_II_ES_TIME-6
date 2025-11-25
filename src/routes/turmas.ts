@@ -1,11 +1,12 @@
 /*
   Arquivo: src/routes/turmas.ts
   Finalidade: Rotas para gerenciar turmas, import/export de alunos e geração de CSV.
-  Observações: Valida existência de disciplinas, importa CSV/JSON e calcula `nota_final` quando necessário.
+  Observações: Valida existência de disciplinas e importa CSV/JSON.
 */
 import express from "express";
 import { db } from "../db";
-import { computeNotaFinalForAluno } from "../utils/grades";
+import crypto from "crypto";
+import { sendExclusaoTurmaEmail } from "../utils/email";
 
 const router = express.Router();
 
@@ -36,7 +37,7 @@ router.get("/:id/notas", async (req, res) => {
     [disciplinaId]
   );
   const alunos = await database.all(
-    "SELECT id, matricula, nome, nota_final FROM alunos WHERE id_turma = $1 ORDER BY nome",
+    "SELECT id, matricula, nome FROM alunos WHERE id_turma = $1 ORDER BY nome",
     [id]
   );
 
@@ -53,22 +54,7 @@ router.get("/:id/notas", async (req, res) => {
   for (const n of notasRows as any[])
     notas[`${n.aluno_id}_${n.componente_id}`] = n.valor;
 
-  for (const a of alunos as any[]) {
-    if (a.nota_final == null) {
-      try {
-        await computeNotaFinalForAluno(database, a.id, disciplinaId);
-      } catch (err) {
-        console.error("Erro compute nota_final:", err);
-      }
-    }
-  }
-
-  const alunosFinal = await database.all(
-    "SELECT id, matricula, nome, nota_final FROM alunos WHERE id_turma = $1 ORDER BY nome",
-    [id]
-  );
-
-  res.json({ componentes, alunos: alunosFinal, notas });
+  res.json({ componentes, alunos, notas });
 });
 
 router.get("/:id/exportar", async (req, res) => {
@@ -86,7 +72,7 @@ router.get("/:id/exportar", async (req, res) => {
     [disciplinaId]
   );
   const alunos = await database.all(
-    "SELECT id, matricula, nome, nota_final FROM alunos WHERE id_turma = $1 ORDER BY nome",
+    "SELECT id, matricula, nome FROM alunos WHERE id_turma = $1 ORDER BY nome",
     [id]
   );
 
@@ -147,7 +133,6 @@ router.get("/:id/exportar", async (req, res) => {
     "Matricula",
     "Nome",
     ...componentes.map((c: any) => c.sigla || c.nome),
-    "Nota Final",
   ];
   const rows: string[] = [];
   rows.push(headerCols.map(escapeCsv).join(","));
@@ -163,7 +148,6 @@ router.get("/:id/exportar", async (req, res) => {
         typeof v === "number" ? v.toFixed(2) : v == null ? "" : String(v)
       );
     }
-    cols.push(a.nota_final == null ? "" : Number(a.nota_final).toFixed(2));
     rows.push(cols.map(escapeCsv).join(","));
   }
 
@@ -359,6 +343,91 @@ router.delete("/:id", async (req, res) => {
   const database = await db();
   await database.run("DELETE FROM turmas WHERE id = $1", [id]);
   res.json({ message: "Turma excluída" });
+});
+
+router.post("/solicitar-exclusao", async (req, res) => {
+  const { email, id } = req.body;
+  const database = await db();
+
+  const turma = await database.get(
+    "SELECT t.*, d.nome AS disciplina_nome, d.codigo AS disciplina_codigo FROM turmas t JOIN disciplinas d ON d.id = t.disciplina_id WHERE t.id = $1",
+    [id]
+  );
+  if (!turma) return res.status(404).json({ message: "Turma não encontrada" });
+
+  // Gerar token de exclusão
+  const token = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(); //expira em 1 dia
+
+  await database.run(
+    "INSERT INTO turma_delete_tokens (turma_id, token, expires_at) VALUES ($1, $2, $3)",
+    [id, token, expiresAt]
+  );
+
+  const link = `http://localhost:3000/exclusao_concluida.html?token=${token}`;
+
+  // 📩 Enviar e-mail de confirmação usando EmailJS
+  try {
+    await sendExclusaoTurmaEmail(
+      email,
+      link,
+      turma.disciplina_nome,
+      turma.codigo || "Sem código",
+      turma.periodo || "Sem período"
+    );
+
+    res.json({ message: "E-mail enviado para confirmação." });
+  } catch (err) {
+    console.error("Erro ao enviar e-mail:", err);
+    res.status(500).json({ message: "Erro ao enviar e-mail de confirmação." });
+  }
+});
+
+router.post("/confirmar-exclusao", async (req, res) => {
+  const { token } = req.body;
+  const database = await db();
+
+  const row = await database.get(
+    "SELECT * FROM turma_delete_tokens WHERE token = $1",
+    [token]
+  );
+
+  if (!row) return res.sendFile("exclusao_erro.html", { root: "public" });
+
+  if (new Date() > new Date(row.expires_at))
+    return res.sendFile("exclusao_erro.html", { root: "public" });
+
+  // excluir em cascata: auditoria → notas → alunos → turma
+  const alunos = await database.all(
+    "SELECT id FROM alunos WHERE id_turma = $1",
+    [row.turma_id]
+  );
+  const alunoIds = alunos.map((a: any) => a.id);
+
+  if (alunoIds.length > 0) {
+    const placeholders = alunoIds.map((_, i) => `$${i + 1}`).join(",");
+    await database.run(
+      `DELETE FROM auditoria_notas WHERE aluno_id IN (${placeholders})`,
+      alunoIds
+    );
+    await database.run(
+      `DELETE FROM notas WHERE aluno_id IN (${placeholders})`,
+      alunoIds
+    );
+    await database.run(`DELETE FROM alunos WHERE id_turma = $1`, [
+      row.turma_id,
+    ]);
+  }
+
+  // excluir turma
+  await database.run("DELETE FROM turmas WHERE id = $1", [row.turma_id]);
+
+  // limpar token
+  await database.run("DELETE FROM turma_delete_tokens WHERE token = $1", [
+    token,
+  ]);
+
+  res.sendFile("exclusao_concluida.html", { root: "public" });
 });
 
 export default router;

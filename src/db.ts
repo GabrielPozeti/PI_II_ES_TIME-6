@@ -111,6 +111,15 @@ export async function initSchema() {
 `);
 
   await client.query(`
+    CREATE TABLE IF NOT EXISTS turma_delete_tokens (
+      id SERIAL PRIMARY KEY,
+      turma_id INTEGER NOT NULL,
+      token TEXT NOT NULL,
+      expires_at TIMESTAMP NOT NULL
+    );
+  `);
+
+  await client.query(`
     CREATE OR REPLACE FUNCTION trg_notas_insert_func()
     RETURNS TRIGGER AS $$
     BEGIN

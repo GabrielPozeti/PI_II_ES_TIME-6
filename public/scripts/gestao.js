@@ -6,13 +6,13 @@
 */
 
 // verify session with server; redirect to login if not authenticated
-await fetch("http://localhost:3000/protected", { credentials: "same-origin" })
-  .then((r) => {
-    if (!r.ok) window.location.href = "/login.html";
-  })
-  .catch(() => {
-    window.location.href = "/login.html";
-  });
+// await fetch("http://localhost:3000/protected", { credentials: "same-origin" })
+//   .then((r) => {
+//     if (!r.ok) window.location.href = "/login.html";
+//   })
+//   .catch(() => {
+//     window.location.href = "/login.html";
+//   });
 
 const qs = (s) => document.querySelector(s);
 const qsa = (s) => Array.from(document.querySelectorAll(s));
@@ -36,7 +36,7 @@ async function request(method, url, body) {
     credentials: "same-origin",
   };
   if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(url, opts);
+  const res = await fetch("http://localhost:3000" + url, opts);
   const contentType = res.headers.get("content-type") || "";
   // try to parse JSON when appropriate, otherwise return text for errors
   if (!res.ok) {
@@ -135,7 +135,7 @@ async function loadTurmas() {
   for (const t of data) {
     const li = document.createElement("li");
     li.textContent = `${t.codigo ? t.codigo + " - " : ""}${
-      t.periodo ? t.periodo + " - " : ""
+      t.periodo ? t.periodo + "º sem." + " - " : ""
     }${t.disciplina_nome}`;
     const actions = document.createElement("div");
     actions.className = "item-actions";
@@ -154,54 +154,10 @@ async function loadTurmas() {
       modalText.textContent = `Confirma exclusão da turma ${t.codigo || t.id}?`;
       modal.className = "";
     };
-    const exp = document.createElement("button");
-    exp.textContent = "Exportar CSV";
-    const imp = document.createElement("button");
-    imp.textContent = "Importar alunos";
-    imp.onclick = async () => {
-      const csv = prompt(
-        "Cole o CSV com duas colunas (matricula, nome). Linhas adicionais serão ignoradas."
-      );
-      if (!csv) return;
-      try {
-        await request("POST", `/turmas/${t.id}/import-csv`, { csv });
-        alert("Importação concluída");
-        await loadTurmas();
-      } catch (err) {
-        alert(err.message || JSON.stringify(err));
-      }
-    };
-    exp.onclick = async () => {
-      try {
-        const r = await fetch("/turmas/" + t.id + "/exportar", {
-          credentials: "same-origin",
-        });
-        if (!r.ok) {
-          const err = await r
-            .json()
-            .catch(() => ({ message: "Erro ao exportar" }));
-          return alert(err.message || "Erro ao exportar CSV");
-        }
-        const blob = await r.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        const cd = r.headers.get("content-disposition") || "";
-        const m = cd.match(/filename\s*=\s*"?([^\";]+)"?/);
-        a.download = m && m[1] ? m[1] : "turma_" + t.id + ".csv";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        alert("CSV gerado com sucesso");
-      } catch (err) {
-        alert(err.message || "Erro ao exportar CSV");
-      }
-    };
+
     actions.appendChild(edit);
     actions.appendChild(del);
-    actions.appendChild(imp);
-    actions.appendChild(exp);
+
     li.appendChild(actions);
     listaTur.appendChild(li);
     if (selAlunoTurma) {
@@ -220,9 +176,10 @@ async function loadAlunos() {
     const data = await request("GET", "/alunos");
     listaAlunos.innerHTML = "";
     for (const a of data) {
+      console.log("aluno: ", a);
       const li = document.createElement("li");
       li.textContent = `${a.matricula || ""} - ${a.nome} ${
-        a.id_turma ? "(" + a.id_turma + ")" : ""
+        a.id_turma ? "(" + a.disciplina_nome + ")" : ""
       }`;
       const actions = document.createElement("div");
       actions.className = "item-actions";

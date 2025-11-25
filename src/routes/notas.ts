@@ -1,11 +1,10 @@
 /*
   Arquivo: src/routes/notas.ts
   Finalidade: Endpoints para manipulação de notas (consulta por componente e atualização em lote).
-  Observações: Realiza transações para atualizações em lote e invoca `computeNotaFinalForAluno`.
+  Observações: Realiza transações para atualizações em lote.
 */
 import express from "express";
 import { db } from "../db";
-import { computeNotaFinalForAluno } from "../utils/grades";
 
 const router = express.Router();
 
@@ -148,22 +147,6 @@ router.put("/", async (req, res) => {
     }
 
     await database.run("COMMIT");
-
-    try {
-      for (const a of Array.from(affectedAlunoIds)) {
-        await computeNotaFinalForAluno(
-          database,
-          a,
-          (comp as any).disciplina_id
-        );
-      }
-    } catch (err) {
-      console.error(
-        "Erro ao recalcular nota_final após atualização em lote:",
-        err
-      );
-    }
-
     res.json({ message: "Notas atualizadas" });
   } catch (err) {
     await database.run("ROLLBACK");

@@ -113,22 +113,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (rows.length > 0) {
         for (const r of rows) {
           const li = document.createElement("li");
-          li.textContent = `${r.nome} ${r.codigo ? "(" + r.codigo + ")" : ""}`;
-          const edit = document.createElement("button");
-          edit.textContent = "Editar";
-          edit.addEventListener("click", async () => {
-            try {
-              const data = await fetch(
-                "http://localhost:3000/disciplinas/" + r.id
-              );
-              document.getElementById("discId").value = data.id;
-              document.getElementById("nome").value = data.nome;
-              document.getElementById("codigo").value = data.codigo || "";
-              instituicaoSelect.value = data.instituicao_id;
-            } catch (err) {
-              alert(err.message);
-            }
-          });
+          li.textContent = `${r.nome} (Código: ${
+            r.codigo || "N/A"
+          }, Instituição: ${r.instituicao_nome || "N/A"}, Período: ${
+            r.periodo + "º semestre" || "N/A"
+          }) `;
+
           const del = document.createElement("button");
           del.textContent = "Excluir";
           del.addEventListener("click", async () => {
@@ -144,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
               alert(err.message);
             }
           });
-          li.appendChild(edit);
+
           li.appendChild(del);
           lista.appendChild(li);
         }
