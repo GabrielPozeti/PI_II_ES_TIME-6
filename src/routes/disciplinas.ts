@@ -51,7 +51,7 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   const id = Number(req.params.id);
-  const { nome, codigo, instituicao_id, formula } = req.body;
+  const { nome, codigo, instituicao_id } = req.body;
   const db = await getDb();
   const existing = await db.get("SELECT * FROM disciplinas WHERE id = $1", [
     id,
@@ -64,42 +64,14 @@ router.put("/:id", async (req, res) => {
     ]);
     if (!inst) return res.status(400).json({ message: "Instituição inválida" });
   }
-  // If formula is provided, validate that all componentes of the disciplina have sigla and are present in the formula
-  if (formula != null) {
-    const componentes = await db.all(
-      "SELECT id, sigla FROM componentes_nota WHERE disciplina_id = $1 ORDER BY id",
-      [id]
-    );
-    const missingSigla = componentes.filter(
-      (c: any) => !c.sigla || String(c.sigla).trim() === ""
-    );
-    if (missingSigla.length > 0)
-      return res.status(400).json({
-        message:
-          "Todos os componentes precisam ter sigla antes de salvar a fórmula",
-      });
-    // verify every componente sigla appears in the formula
-    const notUsed = componentes.filter((c: any) => {
-      const re = new RegExp(
-        "\\b" + String(c.sigla).replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&") + "\\b"
-      );
-      return !re.test(formula);
-    });
-    if (notUsed.length > 0)
-      return res.status(400).json({
-        message:
-          "A fórmula deve utilizar todas as siglas dos componentes cadastrados",
-        missing: notUsed.map((c: any) => c.sigla),
-      });
-  }
+
   const atualizado_em = new Date().toISOString();
   await db.run(
-    "UPDATE disciplinas SET nome = $1, codigo = $2, instituicao_id = $3, formula = $4, atualizado_em = $5 WHERE id = $6",
+    "UPDATE disciplinas SET nome = $1, codigo = $2, instituicao_id = $3, atualizado_em = $4 WHERE id = $5",
     [
       nome || existing.nome,
       codigo || existing.codigo,
       instituicao_id || existing.instituicao_id,
-      formula != null ? formula : existing.formula,
       atualizado_em,
       id,
     ]
@@ -119,6 +91,10 @@ router.delete("/:id", async (req, res) => {
     return res
       .status(400)
       .json({ message: "Existem turmas vinculadas. Exclua-as primeiro." });
+
+  // Deletar componentes de nota associados
+  await db.run("DELETE FROM componentes_nota WHERE disciplina_id = $1", [id]);
+
   await db.run("DELETE FROM disciplinas WHERE id = $1", [id]);
   res.json({ message: "Disciplina excluída" });
 });
