@@ -1,3 +1,5 @@
+//Feito por Ana Beatriz da Silva
+
 /*
   Arquivo: src/routes/disciplinas.ts
   Finalidade: Rotas CRUD para disciplinas e validação da fórmula usada para cálculo de nota.

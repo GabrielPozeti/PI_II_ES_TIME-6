@@ -1,3 +1,5 @@
+//Feito por Ana Beatriz da Silva
+
 /*
   Arquivo: src/utils/grades.ts
   Finalidade: Utilitários para cálculo de nota final de alunos.

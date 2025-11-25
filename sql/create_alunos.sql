@@ -1,3 +1,5 @@
+--Feito por Marina Hehnes Espósito
+
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS alunos (

@@ -1,3 +1,5 @@
+--Feito por Marina Hehnes Espósito
+
 -- Script SQL para criar a tabela docentes
 CREATE TABLE IF NOT EXISTS docentes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

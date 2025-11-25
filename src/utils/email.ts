@@ -1,3 +1,5 @@
+//Feito por Ana Beatriz da Silva
+
 /*
   Arquivo: src/utils/email.ts
   Finalidade: Envio de emails via EmailJS no backend.

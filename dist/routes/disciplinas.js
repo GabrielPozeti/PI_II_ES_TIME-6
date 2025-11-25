@@ -1,3 +1,5 @@
+//Feito por Gabriel Henrique Pozeti de Faria
+
 "use strict";
 var __importDefault =
   (this && this.__importDefault) ||

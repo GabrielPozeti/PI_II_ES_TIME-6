@@ -1,3 +1,5 @@
+//Feito por Ana Beatriz da Silva
+
 import { Client } from "pg";
 
 const client = new Client({

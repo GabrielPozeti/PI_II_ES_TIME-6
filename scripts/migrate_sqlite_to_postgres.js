@@ -1,3 +1,5 @@
+// Feito por Marina Hehnes Espósito
+
 // Script de migração: SQLite -> PostgreSQL
 // Uso: configurar DATABASE_URL no .env e rodar `node scripts/migrate_sqlite_to_postgres.js`
 

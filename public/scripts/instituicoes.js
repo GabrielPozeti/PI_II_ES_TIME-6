@@ -1,3 +1,5 @@
+//Feito por Lara Brondi Lara Brondi Fraccaroli
+
 /*
   Arquivo: instituicoes.js
   Finalidade: Código cliente para `instituicoes.html` — carregamento e CRUD de instituições.

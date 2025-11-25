@@ -1,3 +1,6 @@
+--Feito por Marina Hehnes Espósito
+
+
 -- Schema PostgreSQL gerado a partir dos scripts SQLite
 
 -- Tabelas principais

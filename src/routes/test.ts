@@ -1,3 +1,5 @@
+//Feito por Ana Beatriz da Silva
+
 /*
   Arquivo: src/routes/test.ts
   Finalidade: Testar conexão com PostgreSQL e endpoints do auth.

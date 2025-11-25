@@ -1,3 +1,5 @@
+//Feito por Lara Brondi Lara Brondi Fraccaroli
+
 /*
   Arquivo: disciplinas.js
   Finalidade: Lógica de frontend para `disciplinas.html`: verificação de sessão,

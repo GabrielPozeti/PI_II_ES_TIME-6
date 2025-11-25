@@ -1,3 +1,5 @@
+//Feito por Gabriel Henrique Pozeti de Faria
+
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyToken = verifyToken;
