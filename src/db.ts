@@ -44,8 +44,8 @@ export async function initSchema() {
       id SERIAL PRIMARY KEY,
       nome TEXT NOT NULL,
       codigo TEXT,
+      periodo INTEGER,
       instituicao_id INTEGER REFERENCES instituicoes(id),
-      formula TEXT,
       criado_em TIMESTAMP DEFAULT NOW(),
       atualizado_em TIMESTAMP DEFAULT NOW()
     );
@@ -99,15 +99,26 @@ export async function initSchema() {
   `);
 
   await client.query(`
-    CREATE TABLE IF NOT EXISTS auditoria_notas (
+  CREATE TABLE IF NOT EXISTS auditoria_notas (
+    id SERIAL PRIMARY KEY,
+    aluno_id INTEGER NOT NULL REFERENCES alunos(id),
+    componente_id INTEGER NOT NULL REFERENCES componentes_nota(id),
+    valor_antigo NUMERIC(5,2),
+    valor_novo NUMERIC(5,2),
+    mensagem TEXT,
+    criado_em TIMESTAMP DEFAULT NOW()
+  );
+`);
+
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS turma_delete_tokens (
       id SERIAL PRIMARY KEY,
-      aluno_id INTEGER REFERENCES alunos(id) ON DELETE CASCADE,
-      componente_id INTEGER REFERENCES componentes_nota(id) ON DELETE CASCADE,
-      valor_antigo NUMERIC(5,2),
-      valor_novo NUMERIC(5,2),
-      data_hora TIMESTAMP DEFAULT NOW()
+      turma_id INTEGER NOT NULL,
+      token TEXT NOT NULL,
+      expires_at TIMESTAMP NOT NULL
     );
   `);
+
   await client.query(`
     CREATE OR REPLACE FUNCTION trg_notas_insert_func()
     RETURNS TRIGGER AS $$
@@ -151,21 +162,6 @@ export async function initSchema() {
     FOR EACH ROW
     EXECUTE FUNCTION trg_notas_update_func();
   `);
-
-  await client.query(`
-    INSERT INTO instituicoes (id, nome, sigla, criado_em, atualizado_em)
-    VALUES (1, 'Fatec', 'FAT', NOW(), NOW())
-    ON CONFLICT(id) DO NOTHING;
-  `);
-
-  await client.query(`
-    INSERT INTO docentes (id, nome, email, telefone, senha_hash, curso, id_instituicao, criado_em, atualizado_em)
-    VALUES 
-      (1, 'Daniel', 'danielgalfla12@gmail.com', '(19) 99165-7348', '$2a$10$GrqYIJx/keudBYVdSi54feO2ME3NLjwnXiqi9w01PjzuesJdfrxmG', NULL, NULL, NOW(), NOW()),
-      (2, 'Daniel2', 'maga@gmail.com', '11 112345678', '$2a$10$Iwxb.4tZV8u39kpZdMtx3.MpKz2sfqRsKYWXisct4BtnRn9aFkN..', 'DSM', 1, NOW(), NOW()),
-      (3, 'teste', 'teste@teste', '12345', '$2a$10$mq6gObjZA.GfGQXGBPIyAukk14NZVxKGzJnFHbJkzT8/pH60lTRS6', NULL, NULL, NOW(), NOW())
-    ON CONFLICT(id) DO NOTHING;
-  `);
 }
 
 /**
@@ -190,10 +186,15 @@ export async function db() {
       let q = sql;
       if (isInsert && !/returning\s+/i.test(q)) q += " RETURNING id";
       const res = await client.query(q, params);
-      if (isInsert) return { lastID: res.rows && res.rows[0] ? res.rows[0].id : undefined };
+      if (isInsert)
+        return { lastID: res.rows && res.rows[0] ? res.rows[0].id : undefined };
       return { changes: res.rowCount };
     },
   };
+}
+
+export async function getDb() {
+  return await db();
 }
 
 export default client;

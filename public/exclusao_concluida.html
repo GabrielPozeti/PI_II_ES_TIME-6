@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Exclusão Concluída</title>
+</head>
+<body style="background:#ffe7f3; font-family:Arial; text-align:center; padding:40px;">
+  <h1 style="color:#ff5ca8;">Turma excluída com sucesso!</h1>
+  <p style="color:#444; font-size:16px;">A exclusão foi realizada e não pode ser desfeita.</p>
+  <br>
+  <p  style="background:#ff5ca8; color:white; padding:12px 18px; border-radius:8px; text-decoration:none;">Você pode fechar esta janela.</p>
+</body>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    console.log("token:", token);
+    
+    const fazerRequisicaoDeExclusao = async (token) => {
+        try {
+            const response = await fetch('http://localhost:3000/turmas/confirmar-exclusao', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ token })
+            });
+            if (response.ok) {
+                console.log('Turma excluída com sucesso.');
+            } else {
+                window.location.href = 'exclusao_erro.html';
+                console.log("erro");
+                
+            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+        }
+    };
+   
+    fazerRequisicaoDeExclusao(token);
+    
+</script>
+</html>

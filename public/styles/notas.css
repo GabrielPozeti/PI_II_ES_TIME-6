@@ -115,3 +115,60 @@ select:focus {
   border-color: var(--input-focus);
   box-shadow: 0 0 6px rgba(166, 30, 77, 0.12);
 }
+
+/* Caixa que contém o input de turma */
+.load-box {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+  background: var(--white);
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(214, 51, 108, 0.08);
+}
+
+.load-box label {
+  font-weight: 500;
+  color: var(--maroon);
+}
+
+.load-box input {
+  width: 120px;
+}
+
+/* Cabeçalho com título e botão lado a lado */
+.notas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Wrapper da matriz */
+.matriz-wrapper {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--white);
+  border-radius: 6px;
+  border: 1px solid rgba(214, 51, 108, 0.08);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* Tabela */
+.matriz input {
+  width: 80px;
+  margin-top: 6px;
+}
+
+/* Destacar coluna de Nota Final */
+.matriz th:last-child,
+.matriz td:last-child {
+  font-weight: bold;
+  color: var(--maroon);
+}
+
+/* Alternância de cor mais suave */
+.matriz tbody tr:nth-child(even) {
+  background-color: rgba(214, 51, 108, 0.02);
+}

@@ -21,12 +21,16 @@
       </div>
 
       <section>
-        <h2>Criar / Editar Disciplina</h2>
+        <h2>Criar Disciplina</h2>
         <form id="discForm">
           <input type="hidden" id="discId" />
           <label>Nome: <input id="nome" required /></label>
-          <label>Sigla: <input id="sigla" required /></label>
           <label>Código: <input id="codigo" /></label>
+          <label>Instituição: 
+            <select id="instituicaoId" required>
+              
+            </select>
+          </label>
           <label>Período: <input type="number" id="periodo" required></label>
           <div style="margin-top:8px;">
             <button type="submit">Salvar</button>

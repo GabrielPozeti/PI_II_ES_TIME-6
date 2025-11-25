@@ -25,7 +25,7 @@
           <input type="hidden" id="turmaId" />
           <label>Disciplina: <select id="disciplinaIdSelect"></select></label>
           <label>Código: <input id="codigo" /></label>
-          <label>Período: <input id="periodo" /></label>
+          <label>Período: <input id="periodo" type="number" /></label>
           <div style="margin-top:8px;"><button type="submit">Salvar</button> <button type="button" id="limparBtn">Limpar</button></div>
         </form>
       </section>
@@ -37,21 +37,16 @@
 
       <section style="margin-top:18px;">
         <h2>Importar Alunos</h2>
-        <label>Turma ID: <input id="importTurmaId" type="number" /></label>
+        <label>Turma código: <select id="turmaSelect"></select></label>
         <div>
           <h3>CSV (upload de arquivo)</h3>
           <input id="csvFile" type="file" accept=".csv,text/csv" />
           <button id="importCsvBtn">Importar CSV</button>
         </div>
-        <div style="margin-top:8px;">
-          <h3>JSON (array)</h3>
-          <textarea id="jsonArea" rows="6" style="width:100%" placeholder='[{"matricula":"11111","nome":"Abel"}]'></textarea>
-          <button id="importJsonBtn">Importar JSON</button>
-        </div>
       </section>
     </div>
 
-    <script src="/scripts/turmas.js"></script>
+    <script src="./scripts/turmas.js"></script>
   </body>
 </html>
 <!doctype html>

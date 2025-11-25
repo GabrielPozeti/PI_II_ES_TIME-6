@@ -32,22 +32,17 @@
           <label>Nome: <input id="nome" required /></label>
           <label>Sigla: <input id="sigla" /></label>
           <label>Descrição: <input id="descricao" /></label>
-          <label>Peso: <input id="peso" type="number" step="0.01" min="0" placeholder="1.0" /></label>
+          <label>Disciplina ID: <select id="disciplinaIdSelect"></select></label>
           <button type="submit">Salvar</button>
           <button type="button" id="limparBtn">Limpar</button>
         </form>
 
-        <ul id="componentesList"></ul>
+        <div>
+          <h3>Lista de Componentes</h3>
+          <ul id="componentesList"></ul>
+        </div>
       </section>
 
-      <section id="matrizSection">
-        <h2>Matriz Alunos × Componentes</h2>
-        <div>
-          <label>Nota Final (fórmula): <input id="formulaInput" style="width:60%" placeholder="Ex: (P1 + P2 + P3) / 3" /></label>
-          <button id="saveFormulaBtn">Salvar Fórmula</button>
-        </div>
-        <div id="matrizContainer">Carregue uma disciplina para ver a matriz.</div>
-      </section>
     </div>
 
     <script src="scripts/componentes.js"></script>
